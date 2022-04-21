@@ -1,7 +1,7 @@
-import CodeGen
-import Foundation
-import SwiftSyntax
+import CodeGeneration
+import DependencyAnalyzer
 import DependencyModel
+import Foundation
 
 public struct Generator {
 
@@ -11,15 +11,10 @@ public struct Generator {
         outputFile: URL,
         graphFile: URL
     ) throws {
-        let sourceFile = try SyntaxParser.parse(inputFile)
-        let scanner = SourceFileScanner(
-            moduleName: moduleName,
-            converter: SourceLocationConverter(
-                file: inputFile.absoluteString,
-                tree: sourceFile
-            )
+        let graph = try DependencyAnalysis.extractDependencyGraph(
+            file: inputFile,
+            moduleName: moduleName
         )
-        scanner.walk(sourceFile)
 
         try FileManager.default.createDirectory(
             at: outputFile.deletingLastPathComponent(),
@@ -33,17 +28,11 @@ public struct Generator {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
 
-        try encoder.encode(scanner.dependencyGraph).write(to: graphFile)
-
         print("warning: writing graph to \(graphFile.absoluteString)")
-        print("warning: writing to \(outputFile.absoluteString)")
+        try graph.write(to: graphFile)
 
-        let fileWriter = FileWriter()
-
-        try fileWriter.write(
-            File.generatedFactories(imports: scanner.imports, graph: scanner.dependencyGraph),
-            to: outputFile
-        )
+        print("warning: generating factory methods at \(outputFile.absoluteString)")
+        try CodeGen.generatedFactories(graph: graph).writeToFile(outputFile)
     }
 
     public static func generateModule(
@@ -57,22 +46,9 @@ public struct Generator {
             withIntermediateDirectories: true
         )
 
-        let fileWriter = FileWriter()
-
-        try fileWriter.write(
-            File.module(name: moduleName, graph: mergedGraph),
-            to: outputFile
-        )
+        try CodeGen
+            .generateModule(moduleName: moduleName, graph: mergedGraph)
+            .writeToFile(outputFile)
     }
 
-}
-
-extension DependencyModel.Argument {
-    func toFunctionArgument() -> Function.Argument {
-        Function.Argument(
-            firstName: firstName,
-            secondName: secondName,
-            type: type.name
-        )
-    }
 }

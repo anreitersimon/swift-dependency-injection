@@ -7,7 +7,7 @@ import SwiftDagger
 struct MainApp {
 
     static func main() throws {
-        try DI.resolver.setup(
+        try DependencyInjection.resolver.setup(
             ExampleAppModule(),
             ExampleCoreModule(),
             ExampleModule()

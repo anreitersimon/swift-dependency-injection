@@ -2,15 +2,14 @@ import CodeGen
 import DependencyModel
 import Foundation
 
-enum File {
+public enum CodeGen {
 
     @TextBuilder
-    static func generatedFactories(
-        imports: [String],
+    public static func generatedFactories(
         graph: DependencyGraph
     ) -> Writable {
 
-        for importStmt in imports {
+        for importStmt in graph.imports {
             importStmt
         }
 
@@ -21,7 +20,7 @@ enum File {
                     firstName: "resolver",
                     secondName: nil,
                     type: "DependencyResolver",
-                    defaultValue: "DI.resolver"
+                    defaultValue: "DependencyInjection.resolver"
                 )
             ]
             let assistedProperties = provided.arguments
@@ -67,8 +66,8 @@ enum File {
     /// }
 
     @TextBuilder
-    static func module(
-        name: String,
+    public static func generateModule(
+        moduleName: String,
         graph: DependencyGraph
     ) -> Writable {
 
@@ -78,7 +77,7 @@ enum File {
 
         TypeDeclaration(
             kind: "struct",
-            name: "\(name)Module: Module",
+            name: "\(moduleName)Module: Module",
             accessLevel: "public"
         ) {
             "public init() {}"
@@ -129,5 +128,15 @@ enum File {
 
             }
         }
+    }
+}
+
+extension DependencyModel.Parameter {
+    func toFunctionArgument() -> Function.Argument {
+        Function.Argument(
+            firstName: firstName,
+            secondName: secondName,
+            type: type.name
+        )
     }
 }

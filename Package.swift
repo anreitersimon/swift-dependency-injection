@@ -20,8 +20,8 @@ let package = Package(
             targets: ["ExampleApp"]
         ),
         .library(
-            name: "CodeGen",
-            targets: ["CodeGen"]
+            name: "CodeGeneration",
+            targets: ["CodeGeneration"]
         ),
         .library(
             name: "SwiftDaggerKit",
@@ -61,25 +61,21 @@ let package = Package(
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
         ),
-        .target(
-            name: "DependencyModel",
-            dependencies: [
-                .product(name: "SwiftSyntax", package: "swift-syntax")
-            ]
-        ),
+        .target(name: "DependencyModel"),
         .target(
             name: "DependencyAnalyzer",
             dependencies: [
-                "DependencyModel"
+                .product(name: "SwiftSyntax", package: "swift-syntax"),
+                "DependencyModel",
             ]
         ),
-        .target(name: "CodeGen"),
+        .target(name: "CodeGeneration"),
         .target(
             name: "SwiftDaggerKit",
             dependencies: [
                 "DependencyAnalyzer",
                 "DependencyModel",
-                "CodeGen",
+                "CodeGeneration",
             ]
         ),
         .target(

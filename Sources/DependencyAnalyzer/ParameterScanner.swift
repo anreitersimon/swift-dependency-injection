@@ -1,17 +1,12 @@
-//
-//  File.swift
-//
-//
-//  Created by Simon Anreiter on 19.04.22.
-//
-
 import DependencyModel
 import Foundation
-import SwiftSyntax
+@_implementationOnly import SwiftSyntax
 
 extension FunctionParameterSyntax {
 
-    fileprivate func extractArgument(converter: SourceLocationConverter) -> Argument? {
+    fileprivate func extractArgument(
+        context: Context
+    ) -> Parameter? {
         guard
             let typeName = type?.withoutTrivia().description,
             let name = firstName?.withoutTrivia().description
@@ -24,12 +19,12 @@ extension FunctionParameterSyntax {
             .compactMap { $0.as(CustomAttributeSyntax.self) }
             .map { $0.attributeName.withoutTrivia().description }
 
-        return Argument(
+        return Parameter(
             type: TypeDescriptor(name: typeName),
             firstName: name,
             secondName: secondName?.withoutTrivia().description,
             attributes: attributes ?? [],
-            range: self.sourceRange(converter: converter)
+            range: self.sourceRange(context: context)
         )
 
     }
@@ -38,9 +33,9 @@ extension FunctionParameterSyntax {
 
 extension FunctionParameterListSyntax {
 
-    fileprivate func extractArguments(converter: SourceLocationConverter) -> [Argument] {
+    fileprivate func extractArguments(context: Context) -> [Parameter] {
         return self.compactMap { parameter in
-            parameter.extractArgument(converter: converter)
+            parameter.extractArgument(context: context)
         }
     }
 
@@ -49,15 +44,15 @@ extension FunctionParameterListSyntax {
 extension FunctionDeclSyntax {
 
     func extractArguments(
-        converter: SourceLocationConverter
-    ) -> [Argument] {
-        self.signature.input.parameterList.extractArguments(converter: converter)
+        context: Context
+    ) -> [Parameter] {
+        self.signature.input.parameterList.extractArguments(context: context)
     }
 
 }
 
 extension InitializerDeclSyntax {
-    func extractArguments(converter: SourceLocationConverter) -> [Argument] {
-        return parameters.parameterList.extractArguments(converter: converter)
+    func extractArguments(context: Context) -> [Parameter] {
+        return parameters.parameterList.extractArguments(context: context)
     }
 }

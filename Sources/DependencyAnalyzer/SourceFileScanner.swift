@@ -1,17 +1,15 @@
-import Foundation
-import SwiftSyntax
 import DependencyModel
+import Foundation
+@_implementationOnly import SwiftSyntax
 
 class SourceFileScanner: SyntaxVisitor {
-    let moduleName: String
-    let converter: SourceLocationConverter
+    let context: Context
     var imports: [String] = []
     private var namespace: [String] = []
     var dependencyGraph = DependencyGraph()
 
     init(moduleName: String, converter: SourceLocationConverter) {
-        self.moduleName = moduleName
-        self.converter = converter
+        self.context = Context(moduleName: moduleName, converter: converter)
     }
 
     var currentTypeName: String {
@@ -31,10 +29,10 @@ class SourceFileScanner: SyntaxVisitor {
             return .skipChildren
         }
 
-        let initializers = collectInitializers(node: node, converter: converter)
-        let storedProperties = node.extractStoredProperties(converter: converter)
+        let initializers = node.extractInitializers(context: context)
+        let storedProperties = node.extractStoredProperties(context: context)
 
-        let arguments: [Argument]
+        let arguments: [Parameter]
 
         if initializers.count == 1 {
             // explicit initializer found
@@ -55,7 +53,7 @@ class SourceFileScanner: SyntaxVisitor {
 
         self.dependencyGraph.provides.append(
             ProvidedDependency(
-                location: node.startLocation(converter: converter),
+                location: node.startLocation(context: context),
                 type: TypeDescriptor(name: currentTypeName),
                 kind: .injectable,
                 arguments: arguments
@@ -64,7 +62,7 @@ class SourceFileScanner: SyntaxVisitor {
 
         dependencyGraph.uses.append(
             Injection(
-                range: node.sourceRange(converter: converter),
+                range: node.sourceRange(context: context),
                 arguments: arguments
             )
         )
@@ -80,20 +78,28 @@ class SourceFileScanner: SyntaxVisitor {
 
         namespace.append(node.identifier.withoutTrivia().description)
 
-        let initializers = collectInitializers(node: node, converter: converter)
-        let storedProperties = node.extractStoredProperties(converter: converter)
+        // Check if class inherits `Injectable` marker protocol
+        guard node.inheritanceClause?.hasInjectableConformance ?? false else {
+            return .skipChildren
+        }
 
-        let arguments: [Argument]
+        let initializers = node.extractInitializers(context: context)
+        let storedProperties = node.extractStoredProperties(context: context)
 
-        if initializers.count == 1 {
+        let arguments: [Parameter]
+
+        if initializers.count > 1 {
+            print(
+                "error: Multiple Initializers found move other initializers into a extension to disambiguate"
+            )
+            return .skipChildren
+
+        } else if initializers.count == 1 {
             // explicit initializer found
             arguments = initializers[0].arguments
         } else if initializers.isEmpty, storedProperties.isEmpty {
             // we can use the implicit initializer
             arguments = []
-        } else if initializers.count > 0 {
-            arguments = initializers[0].arguments
-            print("warning: Multiple Initializers found for \(currentTypeName)")
         } else if initializers.isEmpty, !storedProperties.isEmpty {
             // we can use the default memberwise initializer
             arguments = storedProperties
@@ -106,7 +112,7 @@ class SourceFileScanner: SyntaxVisitor {
 
         self.dependencyGraph.provides.append(
             ProvidedDependency(
-                location: node.startLocation(converter: converter),
+                location: node.startLocation(context: context),
                 type: TypeDescriptor(name: currentTypeName),
                 kind: .injectable,
                 arguments: arguments
@@ -115,7 +121,7 @@ class SourceFileScanner: SyntaxVisitor {
 
         dependencyGraph.uses.append(
             Injection(
-                range: node.sourceRange(converter: converter),
+                range: node.sourceRange(context: context),
                 arguments: arguments
             )
         )
@@ -128,39 +134,7 @@ class SourceFileScanner: SyntaxVisitor {
     }
 
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
-
         namespace.append(node.identifier.withoutTrivia().description)
-
-        // Check if class inherits `Injectable` marker protocol
-        guard node.inheritanceClause?.hasInjectableConformance ?? false else {
-            return .skipChildren
-        }
-
-        let initializers = collectInitializers(node: node, converter: converter)
-
-        guard initializers.count == 1,
-            let initializer = initializers.first
-        else {
-            return .skipChildren
-        }
-
-        self.dependencyGraph.imports.formUnion(imports)
-        self.dependencyGraph.provides.append(
-            ProvidedDependency(
-                location: node.startLocation(converter: converter),
-                type: TypeDescriptor(name: currentTypeName),
-                kind: .injectable,
-                arguments: initializer.arguments
-            )
-        )
-
-        dependencyGraph.uses.append(
-            Injection(
-                range: node.sourceRange(converter: converter),
-                arguments: initializer.arguments
-            )
-        )
-
         return .visitChildren
     }
 

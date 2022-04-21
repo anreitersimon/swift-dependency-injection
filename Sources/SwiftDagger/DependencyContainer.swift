@@ -34,7 +34,7 @@ class DefaultProvider<Value>: Provider {
     }
 }
 
-public enum DI {
+public enum DependencyInjection {
     public static var resolver: DependencyResolver & DependencyRegistry = DefaultRegistry()
 }
 

@@ -1,10 +1,3 @@
-public struct DependencyInjection {
-    public private(set) var text = "Hello, World!"
-
-    public init() {
-    }
-}
-
 protocol _AnyProvider {
     func resolveAny(provider: DependencyResolver) throws -> Any
 }

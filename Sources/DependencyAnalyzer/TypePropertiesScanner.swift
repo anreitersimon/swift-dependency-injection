@@ -1,16 +1,14 @@
 import Foundation
-import SwiftSyntax
+@_implementationOnly import SwiftSyntax
 import DependencyModel
 
 
 extension DeclGroupSyntax {
-    func extractStoredProperties(converter: SourceLocationConverter) -> [Argument] {
+    func extractStoredProperties(context: Context) -> [Parameter] {
 
-        let scanner = StoredPropertiesScanner(converter: converter)
+        let scanner = StoredPropertiesScanner(context: context)
 
-        self.children.forEach {
-            scanner.walk($0)
-        }
+        scanner.walk(members)
 
         return scanner.arguments
 
@@ -20,13 +18,13 @@ extension DeclGroupSyntax {
 class StoredPropertiesScanner: SyntaxVisitor {
 
     init(
-        converter: SourceLocationConverter
+        context: Context
     ) {
-        self.converter = converter
+        self.context = context
     }
 
-    let converter: SourceLocationConverter
-    var arguments: [Argument] = []
+    let context: Context
+    var arguments: [Parameter] = []
 
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
         return .skipChildren
@@ -55,12 +53,12 @@ class StoredPropertiesScanner: SyntaxVisitor {
             .map { $0.attributeName.withoutTrivia().description }
 
         self.arguments.append(
-            Argument(
+            Parameter(
                 type: TypeDescriptor(name: typeName),
                 firstName: name,
                 secondName: nil,
                 attributes: attributes ?? [],
-                range: node.sourceRange(converter: converter)
+                range: node.sourceRange(context: context)
             )
         )
 
@@ -71,7 +69,7 @@ class StoredPropertiesScanner: SyntaxVisitor {
 
 extension VariableDeclSyntax {
 
-    func extractArgument(converter: SourceLocationConverter) throws -> Argument? {
+    func extractArgument(context: Context) throws -> Parameter? {
 
         guard
             let binding = bindings.first,
@@ -89,7 +87,7 @@ extension VariableDeclSyntax {
             let typeName = binding.typeAnnotation?.type.withoutTrivia().description
         else {
             throw VariableDeclarationError.typeAnnotationRequired(
-                binding.sourceRange(converter: converter)
+                binding.sourceRange(context: context)
             )
         }
 
@@ -100,17 +98,17 @@ extension VariableDeclSyntax {
             .compactMap { $0.as(CustomAttributeSyntax.self) }
             .map { $0.attributeName.withoutTrivia().description }
 
-        return Argument(
+        return Parameter(
             type: TypeDescriptor(name: typeName),
             firstName: name,
             secondName: nil,
             attributes: attributes ?? [],
-            range: binding.sourceRange(converter: converter)
+            range: binding.sourceRange(context: context)
         )
     }
 
 }
 
 enum VariableDeclarationError: LocalizedError {
-    case typeAnnotationRequired(SourceRange)
+    case typeAnnotationRequired(DependencyModel.SourceRange)
 }

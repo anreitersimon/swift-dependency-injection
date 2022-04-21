@@ -4,6 +4,13 @@ public protocol Writable {
     func write(to writer: FileWriter)
 }
 
+extension Writable {
+    public func writeToFile(_ url: URL) throws {
+        let writer = FileWriter()
+        try writer.write(self, to: url)
+    }
+}
+
 struct CompositeWritable: Writable {
     let elements: [Writable]
     let endLines: Bool

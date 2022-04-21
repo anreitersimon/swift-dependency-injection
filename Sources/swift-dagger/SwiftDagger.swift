@@ -1,4 +1,5 @@
 import ArgumentParser
+import DependencyModel
 import Foundation
 import SwiftDaggerKit
 
