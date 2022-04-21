@@ -3,20 +3,22 @@ import PackagePlugin
 
 @main struct SwiftDocCConvert: BuildToolPlugin {
 
-    func createBuildCommands(context: TargetBuildContext) throws -> [Command] {
+    func createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
 
+        let target = target as! SwiftSourceModuleTarget
+        
         let tool = try context.tool(named: "swift-dagger")
         let generatedSources = context.pluginWorkDirectory.appending("GeneratedSources")
         let dependencyGraphs = context.pluginWorkDirectory.appending("DependencyGraphs")
 
         let moduleFile = generatedSources.appending(
-            "\(context.moduleName)_Module.swift"
+            "\(target.name)_Module.swift"
         )
 
         var graphFiles: [Path] = []
         var commands: [Command] = []
 
-        for file in context.inputFiles where file.type == .source {
+        for file in target.sourceFiles(withSuffix: "swift") {
             let outputFile = generatedSources.appending("\(file.path.stem)_Factories.swift")
             let graphFile = dependencyGraphs.appending("\(file.path.stem).json")
 
@@ -28,7 +30,7 @@ import PackagePlugin
                     executable: tool.path,
                     arguments: [
                         "extract",
-                        "--module-name=\(context.moduleName)",
+                        "--module-name=\(target.moduleName)",
                         "--output-file=\(outputFile)",
                         "--graph-file=\(graphFile)",
                         "--input-file=\(file.path)",
@@ -43,7 +45,7 @@ import PackagePlugin
         var arguments = [
             "merge",
             "--output-file=\(moduleFile)",
-            "--module-name=\(context.moduleName)",
+            "--module-name=\(target.moduleName)",
             "--input-files",
         ]
         graphFiles.forEach {
