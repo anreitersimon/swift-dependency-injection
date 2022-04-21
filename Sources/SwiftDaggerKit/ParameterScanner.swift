@@ -5,12 +5,12 @@
 //  Created by Simon Anreiter on 19.04.22.
 //
 
+import DependencyModel
 import Foundation
 import SwiftSyntax
 
-
 extension FunctionParameterSyntax {
-    
+
     fileprivate func extractArgument(converter: SourceLocationConverter) -> Argument? {
         guard
             let typeName = type?.withoutTrivia().description,
@@ -18,21 +18,22 @@ extension FunctionParameterSyntax {
         else {
             return nil
         }
-        
+
         let attributes =
             attributes?
             .compactMap { $0.as(CustomAttributeSyntax.self) }
             .map { $0.attributeName.withoutTrivia().description }
-    
+
         return Argument(
             type: TypeDescriptor(name: typeName),
             firstName: name,
             secondName: secondName?.withoutTrivia().description,
             attributes: attributes ?? [],
-            range: self.sourceRange(converter: converter))
-        
+            range: self.sourceRange(converter: converter)
+        )
+
     }
-    
+
 }
 
 extension FunctionParameterListSyntax {

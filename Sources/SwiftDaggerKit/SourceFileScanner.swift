@@ -1,5 +1,6 @@
 import Foundation
 import SwiftSyntax
+import DependencyModel
 
 class SourceFileScanner: SyntaxVisitor {
     let moduleName: String

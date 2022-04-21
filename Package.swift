@@ -30,9 +30,8 @@ let package = Package(
     ],
     dependencies: [
         .package(
-            name: "SwiftSyntax",
             url: "https://github.com/apple/swift-syntax.git",
-            .exact("0.50500.0")
+            revision: "0.50500.0"
         ),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.0.0"),
 
@@ -62,11 +61,24 @@ let package = Package(
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
         ),
+        .target(
+            name: "DependencyModel",
+            dependencies: [
+                .product(name: "SwiftSyntax", package: "swift-syntax")
+            ]
+        ),
+        .target(
+            name: "DependencyAnalyzer",
+            dependencies: [
+                "DependencyModel"
+            ]
+        ),
         .target(name: "CodeGen"),
         .target(
             name: "SwiftDaggerKit",
             dependencies: [
-                "SwiftSyntax",
+                "DependencyAnalyzer",
+                "DependencyModel",
                 "CodeGen",
             ]
         ),

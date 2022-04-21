@@ -1,11 +1,5 @@
-//
-//  File.swift
-//
-//
-//  Created by Simon Anreiter on 20.04.22.
-//
-
 import CodeGen
+import DependencyModel
 import Foundation
 
 enum File {
@@ -81,7 +75,7 @@ enum File {
         for importStmt in graph.imports.sorted() {
             importStmt
         }
-        
+
         TypeDeclaration(
             kind: "struct",
             name: "\(name)Module: Module",

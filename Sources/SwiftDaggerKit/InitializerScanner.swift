@@ -1,3 +1,4 @@
+import DependencyModel
 import SwiftSyntax
 
 func collectInitializers<T: SyntaxProtocol>(

@@ -1,6 +1,7 @@
 import CodeGen
 import Foundation
 import SwiftSyntax
+import DependencyModel
 
 public struct Generator {
 
@@ -66,7 +67,7 @@ public struct Generator {
 
 }
 
-extension SwiftDaggerKit.Argument {
+extension DependencyModel.Argument {
     func toFunctionArgument() -> Function.Argument {
         Function.Argument(
             firstName: firstName,

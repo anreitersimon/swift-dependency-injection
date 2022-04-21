@@ -1,5 +1,6 @@
 import Foundation
 import SwiftSyntax
+import DependencyModel
 
 
 extension DeclGroupSyntax {
