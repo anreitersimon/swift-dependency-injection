@@ -69,7 +69,12 @@ let package = Package(
                 "DependencyModel",
             ]
         ),
-        .target(name: "CodeGeneration"),
+        .target(
+            name: "CodeGeneration",
+            dependencies: [
+                "DependencyModel"
+            ]
+        ),
         .target(
             name: "SwiftDaggerKit",
             dependencies: [
