@@ -20,8 +20,8 @@ let package = Package(
             targets: ["ExampleApp"]
         ),
         .library(
-            name: "CodeGeneration",
-            targets: ["CodeGeneration"]
+            name: "SwiftDagger",
+            targets: ["SwiftDagger"]
         ),
         .library(
             name: "SwiftDaggerKit",
