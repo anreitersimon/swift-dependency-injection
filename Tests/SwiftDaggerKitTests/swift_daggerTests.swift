@@ -1,5 +1,5 @@
 import XCTest
-@testable import SwiftDaggerKit
+@testable import DependencyInjectionKit
 
 final class swift_daggerTests: XCTestCase {
     func testExample() throws {

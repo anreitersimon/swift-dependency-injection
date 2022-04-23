@@ -16,8 +16,8 @@ let package = Package(
             targets: ["ExampleApp"]
         ),
         .library(
-            name: "SwiftDagger",
-            targets: ["SwiftDagger"]
+            name: "DependencyInjection",
+            targets: ["DependencyInjection"]
         ),
     ],
     dependencies: [],
@@ -36,7 +36,7 @@ let package = Package(
             ]
         ),
         .target(
-            name: "SwiftDagger",
+            name: "DependencyInjection",
             dependencies: []
         ),
         .target(
@@ -51,7 +51,7 @@ let package = Package(
         .target(
             name: "ExampleCore",
             dependencies: [
-                "SwiftDagger"
+                "DependencyInjection"
             ],
             plugins: [
                 .plugin(name: "DependencyInjectionPlugin")

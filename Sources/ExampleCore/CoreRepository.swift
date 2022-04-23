@@ -1,5 +1,5 @@
 import Foundation
-import SwiftDagger
+import DependencyInjection
 
 public struct CoreRepository: Injectable {
     init(service: Service) {
@@ -7,11 +7,11 @@ public struct CoreRepository: Injectable {
     }
 }
 
-struct Service: SwiftDagger.Injectable {
+struct Service: DependencyInjection.Injectable {
     init(api: API) {}
 }
 
 
 
-struct API: SwiftDagger.Injectable {
+struct API: DependencyInjection.Injectable {
 }

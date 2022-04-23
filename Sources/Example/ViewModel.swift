@@ -1,5 +1,5 @@
 import Foundation
-import SwiftDagger
+import DependencyInjection
 import ExampleCore
 
 class ViewModel: Injectable {

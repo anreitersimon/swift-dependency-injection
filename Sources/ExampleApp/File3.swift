@@ -1,7 +1,7 @@
 import Example
 import ExampleCore
 import Foundation
-import SwiftDagger
+import DependencyInjection
 
 @main
 struct MainApp {
