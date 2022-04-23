@@ -4,16 +4,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "swift-dagger",
+    name: "swift-dependency-injection",
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .plugin(
-            name: "SwiftDaggerPlugin",
-            targets: ["SwiftDaggerPlugin"]
-        ),
-        .executable(
-            name: "swift-dagger",
-            targets: ["swift-dagger"]
+            name: "DependencyInjectionPlugin",
+            targets: ["DependencyInjectionPlugin"]
         ),
         .executable(
             name: "ExampleApp",
@@ -23,64 +19,20 @@ let package = Package(
             name: "SwiftDagger",
             targets: ["SwiftDagger"]
         ),
-        .library(
-            name: "SwiftDaggerKit",
-            targets: ["SwiftDaggerKit"]
-        ),
     ],
-    dependencies: [
-        .package(
-            url: "https://github.com/apple/swift-syntax.git",
-            revision: "0.50500.0"
-        ),
-        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.0.0"),
-
-        // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
-    ],
+    dependencies: [],
     targets: [
         .binaryTarget(
-            name: "lib_InternalSwiftSyntaxParser",
+            name: "swift-dependency-injection",
             url:
-                "https://github.com/keith/StaticInternalSwiftSyntaxParser/releases/download/5.5.2/lib_InternalSwiftSyntaxParser.xcframework.zip",
-            checksum: "96bbc9ab4679953eac9ee46778b498cb559b8a7d9ecc658e54d6679acfbb34b8"
+                "https://github.com/anreitersimon/swift-dependency-injection-cli/releases/download/1.0.0/swift-dependency-injection.zip",
+            checksum: "e57df711464c6ad29b2a61e751ba41c80d3d7965e235c72d0c5aa1e9fb37891d"
         ),
-
         .plugin(
-            name: "SwiftDaggerPlugin",
+            name: "DependencyInjectionPlugin",
             capability: .buildTool(),
             dependencies: [
-                "swift-dagger"
-            ]
-        ),
-        .executableTarget(
-            name: "swift-dagger",
-            dependencies: [
-                "lib_InternalSwiftSyntaxParser",
-                "SwiftDaggerKit",
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
-            ]
-        ),
-        .target(name: "DependencyModel"),
-        .target(
-            name: "DependencyAnalyzer",
-            dependencies: [
-                .product(name: "SwiftSyntax", package: "swift-syntax"),
-                "DependencyModel",
-            ]
-        ),
-        .target(
-            name: "CodeGeneration",
-            dependencies: [
-                "DependencyModel"
-            ]
-        ),
-        .target(
-            name: "SwiftDaggerKit",
-            dependencies: [
-                "DependencyAnalyzer",
-                "DependencyModel",
-                "CodeGeneration",
+                "swift-dependency-injection"
             ]
         ),
         .target(
@@ -93,7 +45,7 @@ let package = Package(
                 "ExampleCore"
             ],
             plugins: [
-                .plugin(name: "SwiftDaggerPlugin")
+                .plugin(name: "DependencyInjectionPlugin")
             ]
         ),
         .target(
@@ -102,7 +54,7 @@ let package = Package(
                 "SwiftDagger"
             ],
             plugins: [
-                .plugin(name: "SwiftDaggerPlugin")
+                .plugin(name: "DependencyInjectionPlugin")
             ]
         ),
         .executableTarget(
@@ -111,16 +63,8 @@ let package = Package(
                 "Example"
             ],
             plugins: [
-                .plugin(name: "SwiftDaggerPlugin")
+                .plugin(name: "DependencyInjectionPlugin")
             ]
-        ),
-        .testTarget(
-            name: "SwiftDaggerKitTests",
-            dependencies: ["SwiftDaggerKit"]
-        ),
-        .testTarget(
-            name: "swift-daggerTests",
-            dependencies: ["swift-dagger"]
         ),
     ]
 )

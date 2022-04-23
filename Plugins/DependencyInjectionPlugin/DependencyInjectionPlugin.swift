@@ -1,13 +1,17 @@
 import Foundation
 import PackagePlugin
 
-@main struct SwiftDocCConvert: BuildToolPlugin {
+@main
+struct DependencyInjectionPlugin: BuildToolPlugin {
 
-    func createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
+    func createBuildCommands(
+        context: PluginContext,
+        target: Target
+    ) throws -> [Command] {
 
         let target = target as! SwiftSourceModuleTarget
-        
-        let tool = try context.tool(named: "swift-dagger")
+
+        let tool = try context.tool(named: "swift-dependency-injection")
         let generatedSources = context.pluginWorkDirectory.appending("GeneratedSources")
         let dependencyGraphs = context.pluginWorkDirectory.appending("DependencyGraphs")
 
