@@ -19,7 +19,7 @@ if localCLITools {
         name: "swift-dependency-injection",
         url:
             "https://github.com/anreitersimon/swift-dependency-injection-cli/releases/download/0.0.1/swift-dependency-injection.zip",
-        checksum: "7a7ea0184392ad49d16a1ee0a46e258b8409da9a6dbfbf66e3c595be28f4bd3c"
+        checksum: "e42407e5dac278463dba8b4ee6ed2c61e94a6962eb50211de5c8a821157cdec6"
     )
 }
 
