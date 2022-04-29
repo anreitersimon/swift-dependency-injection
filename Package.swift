@@ -1,7 +1,27 @@
 // swift-tools-version: 5.6
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
+import Foundation
 import PackageDescription
+
+let localCLITools =
+    ProcessInfo.processInfo.environment["SWIFT_DEPENDENCY_INJECTION_LOCAL_CLI_TOOLS"] != nil
+
+let cliToolsTarget: Target
+
+if localCLITools {
+    cliToolsTarget = .binaryTarget(
+        name: "swift-dependency-injection",
+        path: "swift-dependency-injection.zip"
+    )
+} else {
+    cliToolsTarget = .binaryTarget(
+        name: "swift-dependency-injection",
+        url:
+            "https://github.com/anreitersimon/swift-dependency-injection-cli/releases/download/0.0.1/swift-dependency-injection.zip",
+        checksum: "5829a723828e9ea1c5b85830325059e2daf18749a6218678b28b46adcbefd302"
+    )
+}
 
 let package = Package(
     name: "swift-dependency-injection",
@@ -22,12 +42,7 @@ let package = Package(
     ],
     dependencies: [],
     targets: [
-        .binaryTarget(
-            name: "swift-dependency-injection",
-            url:
-                "https://github.com/anreitersimon/swift-dependency-injection-cli/releases/download/1.0.0/swift-dependency-injection.zip",
-            checksum: "e57df711464c6ad29b2a61e751ba41c80d3d7965e235c72d0c5aa1e9fb37891d"
-        ),
+        cliToolsTarget,
         .plugin(
             name: "DependencyInjectionPlugin",
             capability: .buildTool(),
@@ -35,6 +50,7 @@ let package = Package(
                 "swift-dependency-injection"
             ]
         ),
+
         .target(
             name: "DependencyInjection",
             dependencies: []

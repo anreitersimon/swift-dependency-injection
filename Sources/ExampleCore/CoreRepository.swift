@@ -1,17 +1,19 @@
-import Foundation
 import DependencyInjection
+import Foundation
 
 public struct CoreRepository: Injectable {
-    init(service: Service) {
+
+    init(
+        @Inject service: Service
+    ) {
         print("")
     }
+
 }
 
-struct Service: DependencyInjection.Injectable {
-    init(api: API) {}
+struct Service: Injectable {
+    init(@Inject api: API) {}
 }
 
-
-
-struct API: DependencyInjection.Injectable {
+struct API: Injectable {
 }

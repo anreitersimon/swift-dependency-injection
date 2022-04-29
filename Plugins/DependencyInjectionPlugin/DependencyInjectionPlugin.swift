@@ -15,6 +15,7 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
         let generatedSources = context.pluginWorkDirectory.appending("GeneratedSources")
         let dependencyGraphs = context.pluginWorkDirectory.appending("DependencyGraphs")
 
+        Diagnostics.remark("Working Directory: \(context.pluginWorkDirectory.string)")
         let moduleFile = generatedSources.appending(
             "\(target.name)_Module.swift"
         )

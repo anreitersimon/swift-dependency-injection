@@ -1,5 +1,15 @@
 protocol _AnyProvider {
+    var requirements: [String: TypeID] { get }
+
     func resolveAny(provider: DependencyResolver) throws -> Any
+
+    func checkIsResolvable() -> DependencyErrors?
+}
+
+extension _AnyProvider {
+    func checkIsResolvable() -> DependencyErrors? {
+        nil
+    }
 }
 
 protocol Provider: _AnyProvider {

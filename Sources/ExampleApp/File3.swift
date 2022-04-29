@@ -1,26 +1,33 @@
+import DependencyInjection
 import Example
 import ExampleCore
 import Foundation
-import DependencyInjection
 
 @main
 struct MainApp {
-
     static func main() throws {
-        try DependencyInjection.resolver.setup(
-            ExampleAppModule(),
-            ExampleCoreModule(),
-            ExampleModule()
+        try Dependencies.sharedRegistry.setup(
+            ExampleApp_Module.self,
+            ExampleCore_Module.self,
+            Example_Module.self
         )
     }
-
 }
 
 class ViewModel2: Injectable {
     let injected: CoreRepository
 
-    required init(injected: CoreRepository) {
+    required init(
+        @Inject injected: CoreRepository,
+        @Assisted name: String = ""
+    ) {
         self.injected = injected
     }
 
+}
+
+class A: WeakSingleton {
+    init(@Inject repo: CoreRepository) {
+
+    }
 }
