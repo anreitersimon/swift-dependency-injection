@@ -11,6 +11,12 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
 
         let target = target as! SwiftSourceModuleTarget
 
+        if !target.recursiveTargetDependencies.contains(where: { $0.name == "DependencyInjection" }) {
+            Diagnostics.error(
+                "Target \(target.name) does not have required dependency DependencyInjection"
+            )
+        }
+
         let tool = try context.tool(named: "swift-dependency-injection")
         let generatedSources = context.pluginWorkDirectory.appending("GeneratedSources")
         let dependencyGraphs = context.pluginWorkDirectory.appending("DependencyGraphs")
