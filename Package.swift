@@ -18,8 +18,8 @@ if localCLITools {
     cliToolsTarget = .binaryTarget(
         name: "swift-dependency-injection",
         url:
-            "https://github.com/anreitersimon/swift-dependency-injection-cli/releases/download/0.0.1/swift-dependency-injection.zip",
-        checksum: "e42407e5dac278463dba8b4ee6ed2c61e94a6962eb50211de5c8a821157cdec6"
+            "https://github.com/anreitersimon/swift-dependency-injection-cli/releases/download/0.0.2/swift-dependency-injection.zip",
+        checksum: "5d396c220a666e3beee718cfbb1eb6f59a61931f3e9b10530dc94378a644338d"
     )
 }
 
