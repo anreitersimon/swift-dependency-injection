@@ -37,18 +37,17 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
 
             commands.append(
                 Command.buildCommand(
-                    displayName: "Analyzing \(file.path) \(tool.name)",
+                    displayName: "Generating \(file.path.lastComponent) Factories ",
                     executable: tool.path,
                     arguments: [
                         "extract",
                         "--module-name=\(target.moduleName)",
                         "--output-file=\(outputFile)",
-                        "--graph-file=\(graphFile)",
                         "--input-file=\(file.path)",
                     ],
                     environment: [:],
                     inputFiles: [file.path],
-                    outputFiles: [outputFile, graphFile]
+                    outputFiles: [outputFile]
                 )
             )
         }
@@ -65,11 +64,11 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
 
         commands.append(
             Command.buildCommand(
-                displayName: "Merging Dependencies",
+                displayName: "Generating \(target.moduleName) Module",
                 executable: tool.path,
                 arguments: arguments,
                 environment: [:],
-                inputFiles: graphFiles,
+                inputFiles: [],
                 outputFiles: [moduleFile]
             )
         )
