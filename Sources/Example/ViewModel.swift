@@ -7,9 +7,19 @@ class ViewModel: Injectable {
 
     required init(
         @Inject injected: CoreRepository,
-        @Inject injected2: CoreRepository
+        @Assisted injected2: CoreRepository
     ) {
         self.injected = injected
     }
 
+}
+
+struct AProtocolImplementation: Singleton, AProtocol {}
+
+extension Dependencies.Factories {
+    static func bind(
+        _ impl: AProtocolImplementation
+    ) -> AProtocol {
+        impl
+    }
 }

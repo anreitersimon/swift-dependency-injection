@@ -17,3 +17,5 @@ struct Service: Injectable {
 
 struct API: Injectable {
 }
+
+public protocol AProtocol {}

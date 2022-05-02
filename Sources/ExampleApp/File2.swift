@@ -14,12 +14,13 @@ struct MainApp {
     }
 }
 
+
 class ViewModel2: Injectable {
     let injected: CoreRepository
 
     required init(
         @Inject injected: CoreRepository,
-        @Assisted name: String = ""
+        @Inject protocol: AProtocol
     ) {
         self.injected = injected
     }
