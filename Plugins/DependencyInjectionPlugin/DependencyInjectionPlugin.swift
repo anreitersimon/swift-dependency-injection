@@ -73,11 +73,11 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
         }
 
         commands.append(
-            Command.prebuildCommand(
-                displayName: "Generating \(target.moduleName) DependencyModule",
+            .buildCommand(
+                displayName:  "Generating \(target.moduleName) DependencyModule",
                 executable: tool.path,
                 arguments: arguments,
-                outputFilesDirectory: modulesDir
+                outputFiles: [moduleFile]
             )
         )
 
