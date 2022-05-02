@@ -9,9 +9,15 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
         target: Target
     ) throws -> [Command] {
 
-        let target = target as! SwiftSourceModuleTarget
+        guard let target = target as? SwiftSourceModuleTarget else {
+            Diagnostics.remark(
+                "Plugin can only be applied to Swift targets"
+            )
+            return []
+        }
 
-        if !target.recursiveTargetDependencies.contains(where: { $0.name == "DependencyInjection" }) {
+        if !target.recursiveTargetDependencies.contains(where: { $0.name == "DependencyInjection" })
+        {
             Diagnostics.error(
                 "Target \(target.name) does not have required dependency DependencyInjection"
             )
@@ -19,10 +25,12 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
 
         let tool = try context.tool(named: "swift-dependency-injection")
         let generatedSources = context.pluginWorkDirectory.appending("GeneratedSources")
+        let factoriesDir = generatedSources.appending("Factories")
+        let modulesDir = generatedSources.appending("Modules")
         let dependencyGraphs = context.pluginWorkDirectory.appending("DependencyGraphs")
 
         Diagnostics.remark("Working Directory: \(context.pluginWorkDirectory.string)")
-        let moduleFile = generatedSources.appending(
+        let moduleFile = modulesDir.appending(
             "\(target.name)_Module.swift"
         )
 
@@ -30,14 +38,16 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
         var commands: [Command] = []
 
         for file in target.sourceFiles(withSuffix: "swift") {
-            let outputFile = generatedSources.appending("\(file.path.stem)_Factories.swift")
+            let outputFile = factoriesDir.appending(
+                "\(file.path.stem)+DependencyFactories.swift"
+            )
             let graphFile = dependencyGraphs.appending("\(file.path.stem).json")
 
             graphFiles.append(graphFile)
 
             commands.append(
                 Command.buildCommand(
-                    displayName: "Generating \(file.path.lastComponent) Factories ",
+                    displayName: "Generating \(outputFile.stem)",
                     executable: tool.path,
                     arguments: [
                         "extract",
@@ -63,13 +73,11 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
         }
 
         commands.append(
-            Command.buildCommand(
-                displayName: "Generating \(target.moduleName) Module",
+            Command.prebuildCommand(
+                displayName: "Generating \(target.moduleName) DependencyModule",
                 executable: tool.path,
                 arguments: arguments,
-                environment: [:],
-                inputFiles: [],
-                outputFiles: [moduleFile]
+                outputFilesDirectory: modulesDir
             )
         )
 
