@@ -27,23 +27,31 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
         let generatedSources = context.pluginWorkDirectory.appending("GeneratedSources")
         let factoriesDir = generatedSources.appending("Factories")
         let modulesDir = generatedSources.appending("Modules")
-        let dependencyGraphs = context.pluginWorkDirectory.appending("DependencyGraphs")
+        let fileList = context.pluginWorkDirectory.appending("file-list.txt")
 
         Diagnostics.remark("Working Directory: \(context.pluginWorkDirectory.string)")
         let moduleFile = modulesDir.appending(
             "\(target.name)_Module.swift"
         )
 
-        var graphFiles: [Path] = []
+        var files: [String] = []
         var commands: [Command] = []
+
+        FileManager.default.createFile(
+            atPath: fileList.string,
+            contents: target
+                .sourceFiles(withSuffix: "swift")
+                .map(\.path.string)
+                .joined(separator: "\n")
+                .data(using: .utf8),
+            attributes: nil
+        )
 
         for file in target.sourceFiles(withSuffix: "swift") {
             let outputFile = factoriesDir.appending(
                 "\(file.path.stem)+DependencyFactories.swift"
             )
-            let graphFile = dependencyGraphs.appending("\(file.path.stem).json")
-
-            graphFiles.append(graphFile)
+            files.append(file.path.string)
 
             commands.append(
                 Command.buildCommand(
@@ -62,21 +70,19 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
             )
         }
 
-        var arguments = [
+        let arguments = [
             "merge",
             "--output-file=\(moduleFile)",
             "--module-name=\(target.moduleName)",
-            "--input-files",
+            "--input-file=\(fileList)",
         ]
-        graphFiles.forEach {
-            arguments.append($0.string)
-        }
 
         commands.append(
             .buildCommand(
-                displayName:  "Generating \(target.moduleName) DependencyModule",
+                displayName: "Generating \(target.moduleName) DependencyModule",
                 executable: tool.path,
                 arguments: arguments,
+                inputFiles: [fileList],
                 outputFiles: [moduleFile]
             )
         )

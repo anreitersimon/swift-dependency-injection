@@ -19,3 +19,4 @@ struct API: Injectable {
 }
 
 public protocol AProtocol {}
+

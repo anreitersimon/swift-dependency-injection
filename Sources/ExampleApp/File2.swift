@@ -19,6 +19,7 @@ class ViewModel2: Injectable {
     let injected: CoreRepository
 
     required init(
+        
         @Inject injected: CoreRepository,
         @Inject protocol: AProtocol
     ) {
