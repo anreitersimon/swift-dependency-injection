@@ -44,6 +44,11 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
                 !$0.compilationConditions.contains("swift_dependency_injection_exclude")
 
             }
+            .filter {
+                $0.recursiveTargetDependencies.contains {
+                    $0.name == "DependencyInjection"
+                }
+            }
             .map { $0.moduleName }
 
         Diagnostics.remark("SubModules: \(modules.joined(separator: ", "))")
