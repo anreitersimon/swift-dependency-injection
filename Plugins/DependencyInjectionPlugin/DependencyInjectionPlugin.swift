@@ -28,6 +28,7 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
         let factoriesDir = generatedSources.appending("Factories")
         let modulesDir = generatedSources.appending("Modules")
         let fileList = context.pluginWorkDirectory.appending("file-list.txt")
+        let modulesList = context.pluginWorkDirectory.appending("modules-list.txt")
 
         Diagnostics.remark("Working Directory: \(context.pluginWorkDirectory.string)")
         let moduleFile = modulesDir.appending(
@@ -37,14 +38,28 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
         var files: [String] = []
         var commands: [Command] = []
 
-        FileManager.default.createFile(
+        let modules = target.recursiveTargetDependencies
+            .compactMap { $0 as? SwiftSourceModuleTarget }
+            .filter {
+                !$0.compilationConditions.contains("swift_dependency_injection_exclude")
+
+            }
+            .map { $0.moduleName }
+
+        Diagnostics.remark("SubModules: \(modules.joined(separator: ", "))")
+
+        FileManager.default.smartWrite(
+            atPath: modulesList.string,
+            contents: modules.joined(separator: "\n")
+        )
+
+        FileManager.default.smartWrite(
             atPath: fileList.string,
-            contents: target
+            contents:
+                target
                 .sourceFiles(withSuffix: "swift")
                 .map(\.path.string)
                 .joined(separator: "\n")
-                .data(using: .utf8),
-            attributes: nil
         )
 
         for file in target.sourceFiles(withSuffix: "swift") {
@@ -55,10 +70,10 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
 
             commands.append(
                 Command.buildCommand(
-                    displayName: "Generating \(outputFile.stem)",
+                    displayName: "Generating Dependencies from \(file.path.stem)",
                     executable: tool.path,
                     arguments: [
-                        "extract",
+                        "generate-file",
                         "--module-name=\(target.moduleName)",
                         "--output-file=\(outputFile)",
                         "--input-file=\(file.path)",
@@ -71,10 +86,11 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
         }
 
         let arguments = [
-            "merge",
+            "generate-module",
             "--output-file=\(moduleFile)",
             "--module-name=\(target.moduleName)",
-            "--input-file=\(fileList)",
+            "--module-list-file=\(modulesList)",
+            "--file-list-file=\(fileList)",
         ]
 
         commands.append(
@@ -82,7 +98,7 @@ struct DependencyInjectionPlugin: BuildToolPlugin {
                 displayName: "Generating \(target.moduleName) DependencyModule",
                 executable: tool.path,
                 arguments: arguments,
-                inputFiles: [fileList],
+                inputFiles: [fileList, modulesList],
                 outputFiles: [moduleFile]
             )
         )

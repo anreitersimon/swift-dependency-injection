@@ -1,3 +1,4 @@
+
 /// Whenever this is injected a new Instance will be created
 public protocol Injectable {}
 

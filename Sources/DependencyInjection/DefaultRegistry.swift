@@ -4,8 +4,12 @@ class DefaultRegistry: DependencyRegistry, DependencyResolver {
 
     func setup(_ modules: DependencyModule.Type...) throws {
         var visited: Set<ObjectIdentifier> = []
-        
-        for module in modules where visited.insert(ObjectIdentifier(module)).inserted {
+
+        let flatModules = modules.flatMap { [$0] + $0.submodules }
+        for module in flatModules where visited.insert(ObjectIdentifier(module)).inserted {
+            
+            print("Registering: \(module)")
+
             module.register(in: self)
         }
         isSetupFinished = true

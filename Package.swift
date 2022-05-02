@@ -53,7 +53,11 @@ let package = Package(
 
         .target(
             name: "DependencyInjection",
-            dependencies: []
+            dependencies: [],
+            
+            swiftSettings: [
+                .define("swift_dependency_injection_exclude")
+            ]
         ),
         .target(
             name: "Example",

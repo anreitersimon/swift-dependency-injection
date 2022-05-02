@@ -4,6 +4,15 @@ public struct DependencyValidationError: Error {
     public let issues: [Error]
 }
 
+extension Collection {
+    func withIsLast() -> [(isLast: Bool, element: Element)] {
+        let count = self.count
+        return zip(0..., self).map { (index, element) in
+            (index == count - 1, element)
+        }
+    }
+}
+
 class Validator {
     struct PathComponent: CustomStringConvertible, CustomDebugStringConvertible {
         let name: String
@@ -29,10 +38,11 @@ class Validator {
     let graph: [TypeID: _AnyProvider]
     var path: [PathComponent] = []
     var issues: [DependencyErrors] = []
+    var visited: Set<TypeID> = []
 
     func run() throws {
-        for type in graph.keys {
-            check(type)
+        for (isLast, type) in self.graph.keys.withIsLast() {
+            check(type, prefix: "", isLast: isLast)
         }
 
         if !issues.isEmpty {
@@ -45,8 +55,31 @@ class Validator {
         }
     }
 
-    func check(_ type: TypeID, name: String = "*") {
+    func check(
+        _ type: TypeID,
+        name: String = "*",
+        prefix outerPrefix: String,
+        isLast: Bool
+    ) {
+
+        let inserted = visited.insert(type).inserted
+
+        //▼▶
+        func log(_ msg: String) {
+            let symbol = (inserted && !isLast) ? "▼" : "▶"
+            print("\(outerPrefix)\(symbol) \(type) \(msg)")
+        }
+
+        let prefix = isLast ? "\(outerPrefix)   " : "\(outerPrefix)   "
+        
+        guard inserted else {
+            log("")
+            return
+        }
+
         guard !path.contains(where: { $0.type == type }) else {
+
+            log("💥 Cycle")
             issues.append(.cycle(type: type.type, path: path))
             return
         }
@@ -58,11 +91,19 @@ class Validator {
 
         if let provider = graph[type] {
             if let error = provider.checkIsResolvable() {
+                log("💥 \(error)")
                 issues.append(error)
             } else {
-                for requirement in provider.requirements {
-                    check(requirement.value, name: requirement.key)
+                log("")
+                for (isLast, requirement) in provider.requirements.withIsLast() {
+                    check(
+                        requirement.value,
+                        name: requirement.key,
+                        prefix: prefix,
+                        isLast: isLast
+                    )
                 }
+
             }
         } else {
             issues.append(DependencyErrors.noProvider(type: type.type))

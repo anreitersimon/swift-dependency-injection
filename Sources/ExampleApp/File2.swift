@@ -7,9 +7,7 @@ import Foundation
 struct MainApp {
     static func main() throws {
         try Dependencies.sharedRegistry.setup(
-            ExampleApp_Module.self,
-            ExampleCore_Module.self,
-            Example_Module.self
+            ExampleApp_Module.self
         )
     }
 }

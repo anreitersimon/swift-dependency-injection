@@ -1,8 +1,10 @@
 import DependencyInjection
 import Foundation
 
-public struct CoreRepository: Injectable {
+protocol RepoProtocol {}
 
+
+public struct CoreRepository: Injectable, RepoProtocol {
     init(
         @Inject service: Service
     ) {
