@@ -1,4 +1,6 @@
 class FactoryProvider<Value>: Provider {
+    var typeName: ProviderType { .factory }
+    
     typealias Provided = Value
     let factory: FactoryClosure<Value>
     let requirements: [String: TypeID]

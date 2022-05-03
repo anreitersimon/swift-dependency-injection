@@ -1,4 +1,7 @@
 class SingletonProvider<Value>: Provider {
+
+    var typeName: ProviderType { .singleton }
+    
     typealias Provided = Value
     let factory: FactoryClosure<Value>
     let requirements: [String: TypeID]

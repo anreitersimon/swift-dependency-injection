@@ -1,21 +1,47 @@
-class DefaultRegistry: DependencyRegistry, DependencyResolver {
-    private var isSetupFinished: Bool = false
+struct Graph {
+    private(set) var keys: [TypeID] = []
     private var factories: [TypeID: _AnyProvider] = [:]
 
-    func setup(_ modules: DependencyModule.Type...) throws {
-        var visited: Set<ObjectIdentifier> = []
+    subscript(_ key: TypeID) -> _AnyProvider? {
+        return factories[key]
+    }
 
-        let flatModules = modules.flatMap { [$0] + $0.submodules }
-        for module in flatModules where visited.insert(ObjectIdentifier(module)).inserted {
-            
-            print("Registering: \(module)")
+    mutating func addProvider(_ provider: _AnyProvider, for key: TypeID) {
+        keys.append(key)
+        factories[key] = provider
+    }
+}
 
+class DefaultRegistry: DependencyRegistry, DependencyResolver {
+    private var isSetupFinished: Bool = false
+
+    private var graph = Graph()
+
+    private var registeredModules: Set<ObjectIdentifier> = []
+
+    private func registerModule(_ module: DependencyModule.Type) {
+        if registeredModules.insert(ObjectIdentifier(module)).inserted {
             module.register(in: self)
+        }
+
+        for subModule in module.submodules {
+            registerModule(subModule)
+        }
+    }
+
+    func setup(_ modules: DependencyModule.Type...) throws {
+
+        for module in modules {
+            self.registerModule(module)
         }
         isSetupFinished = true
 
-        let validator = Validator(graph: factories)
-        try validator.run()
+        let dotPrinter = DotGraphPrinter(graph: graph)
+        try dotPrinter.run()
+        
+        print(dotPrinter.dotGraph)
+        
+        //try validator.run()
     }
 
     func registerSingleton<Value>(
@@ -77,14 +103,15 @@ class DefaultRegistry: DependencyRegistry, DependencyResolver {
         provider: _AnyProvider
     ) {
         assert(!isSetupFinished)
-        factories[TypeID(type)] = provider
+
+        graph.addProvider(provider, for: TypeID(type))
     }
 
     func resolve<Value>(_ type: Value.Type) -> Value {
         assert(isSetupFinished)
 
         let id = TypeID(type)
-        let provider = factories[id]!
+        let provider = graph[id]!
         return try! provider.resolveAny(provider: self) as! Value
     }
 

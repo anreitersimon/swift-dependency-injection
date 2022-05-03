@@ -1,4 +1,5 @@
 class WeakSingletonProvider<Value: AnyObject>: Provider {
+    var typeName: ProviderType { .weakSingleton }
     typealias Provided = Value
 
     let requirements: [String: TypeID]

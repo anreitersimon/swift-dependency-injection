@@ -18,7 +18,8 @@ struct AProtocolImplementation: Singleton, AProtocol {}
 
 extension Dependencies.Factories {
     static func bind(
-        _ impl: AProtocolImplementation
+        impl: AProtocolImplementation,
+        apo: AProtocol
     ) -> AProtocol {
         impl
     }

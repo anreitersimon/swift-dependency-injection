@@ -17,8 +17,7 @@ struct Service: Injectable {
     init(@Inject api: API) {}
 }
 
-struct API: Injectable {
-}
+struct API: Injectable {}
 
 public protocol AProtocol {}
 

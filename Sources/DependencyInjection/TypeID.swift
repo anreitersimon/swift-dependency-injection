@@ -25,6 +25,5 @@ struct TypeID:
 
     var debugDescription: String {
         return String(describing: self.type)
-
     }
 }
