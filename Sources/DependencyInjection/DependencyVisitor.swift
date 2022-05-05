@@ -42,16 +42,15 @@ class DependencyVisitor {
         _ pathComponent: PathComponent
     ) -> ResolveResult {
 
+        let result: ResolveResult
+
+        visit(pathComponent.type)
+
         if let cached = resolved[pathComponent.type] {
             // Already resolved
             return cached
         }
 
-        visit(pathComponent.type)
-        
-
-        let result: ResolveResult
-        
         defer {
             postVisit(pathComponent.type, result: result)
         }
@@ -116,16 +115,17 @@ struct DotGraph: CustomStringConvertible {
     struct Node: Equatable, CustomStringConvertible {
         typealias ID = String
         let attributes: [String: String]
-        
+
         var description: String {
             if attributes.isEmpty {
                 return ""
             }
-            
-            let formatted = attributes
+
+            let formatted =
+                attributes
                 .map { "\($0.key)=\"\($0.value)\"" }
                 .joined(separator: " ")
-            
+
             return "[\(formatted)]"
         }
     }
@@ -164,15 +164,24 @@ class DotGraphPrinter: DependencyVisitor {
     var dotGraph = DotGraph()
 
     var sourceNode: TypeID? { path.last?.type }
-    
-    override func postVisit(_ type: TypeID, result: ResolveResult) {
+
+    override func visit(_ type: TypeID) {
+        if let sourceNode = sourceNode {
+            dotGraph.edges.append(
+                DotGraph.Edge(from: sourceNode.description, to: type.description)
+            )
+        }
+    }
+
+    override func postVisit(
+        _ type: TypeID,
+        result: ResolveResult
+    ) {
         let id = type.description
-        dotGraph.nodes[id] = DotGraph.Node(attributes: [
-            "color": result.isSuccess ? "green" : "red"
-        ])
-        let sourceNode = sourceNode?.description ?? "root"
-        dotGraph.edges.append(
-            DotGraph.Edge(from: sourceNode.description, to: id)
+        dotGraph.nodes[id] = DotGraph.Node(
+            attributes: [
+                "color": result.isSuccess ? "green" : "red"
+            ]
         )
 
     }
@@ -186,7 +195,7 @@ extension Result {
         case .failure(let error): return error
         }
     }
-    
+
     var isSuccess: Bool {
         switch self {
         case .success: return true

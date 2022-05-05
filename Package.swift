@@ -7,22 +7,6 @@ import PackageDescription
 let localCLITools =
     ProcessInfo.processInfo.environment["SWIFT_DEPENDENCY_INJECTION_LOCAL_CLI_TOOLS"] != nil
 
-let cliToolsTarget: Target
-
-if localCLITools {
-    cliToolsTarget = .binaryTarget(
-        name: "swift-dependency-injection",
-        path: "swift-dependency-injection.zip"
-    )
-} else {
-    cliToolsTarget = .binaryTarget(
-        name: "swift-dependency-injection",
-        url:
-            "https://github.com/anreitersimon/swift-dependency-injection-cli/releases/download/0.0.2/swift-dependency-injection.zip",
-        checksum: "5d396c220a666e3beee718cfbb1eb6f59a61931f3e9b10530dc94378a644338d"
-    )
-}
-
 let package = Package(
     name: "swift-dependency-injection",
     products: [
@@ -42,7 +26,6 @@ let package = Package(
     ],
     dependencies: [],
     targets: [
-        cliToolsTarget,
         .plugin(
             name: "DependencyInjectionPlugin",
             capability: .buildTool(),
@@ -50,11 +33,10 @@ let package = Package(
                 "swift-dependency-injection"
             ]
         ),
-
         .target(
             name: "DependencyInjection",
             dependencies: [],
-            
+
             swiftSettings: [
                 .define("swift_dependency_injection_exclude")
             ]
@@ -88,3 +70,18 @@ let package = Package(
         ),
     ]
 )
+
+if localCLITools && false {
+    print("\(#file): warning: Using Local Plugin")
+    package.dependencies.append(
+        .package(path: "./swift-dependency-injection-cli")
+    )
+} else {
+    print("\(#file): warning: Using Precompiled Plugin")
+    package.targets.append(
+        .binaryTarget(
+            name: "swift-dependency-injection",
+            path: "swift-dependency-injection.zip"
+        )
+    )
+}

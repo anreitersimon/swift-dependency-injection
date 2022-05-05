@@ -14,13 +14,21 @@ class ViewModel: Injectable {
 
 }
 
-struct AProtocolImplementation: Singleton, AProtocol {}
+protocol AProtocol2 {}
+
+struct AProtocolImplementation: Singleton, AProtocol, AProtocol2 {}
 
 extension Dependencies.Factories {
     static func bind(
         impl: AProtocolImplementation,
         apo: AProtocol
     ) -> AProtocol {
+        impl
+    }
+    
+    static func bind(
+        impl: AProtocolImplementation
+    ) -> AProtocol2 {
         impl
     }
 }
