@@ -71,7 +71,7 @@ let package = Package(
     ]
 )
 
-if localCLITools && false {
+if localCLITools {
     print("\(#file): warning: Using Local Plugin")
     package.dependencies.append(
         .package(path: "./swift-dependency-injection-cli")
