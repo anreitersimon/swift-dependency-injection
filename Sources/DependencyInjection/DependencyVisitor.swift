@@ -1,9 +1,9 @@
 struct ResolvedGraph {
-    init(graph: Graph) {
+    init(graph: DependencyGraph) {
         self.graph = graph
     }
 
-    let graph: Graph
+    let graph: DependencyGraph
     private var resolved: [TypeID: ResolveResult] = [:]
 
     subscript(_ type: TypeID) -> ResolveResult? {
@@ -16,7 +16,7 @@ typealias ResolveResult = Result<Void, DependencyErrors>
 
 class DependencyVisitor {
 
-    init(graph: Graph) {
+    init(graph: DependencyGraph) {
         self.resolved = ResolvedGraph(graph: graph)
     }
 
@@ -25,9 +25,9 @@ class DependencyVisitor {
 
     func run() throws {
 
-        for key in resolved.graph.keys {
-            _ = runVisit(PathComponent(name: "<root>", type: key))
-        }
+//        for key in resolved.graph.keys {
+//            _ = runVisit(PathComponent(name: "<root>", type: key))
+//        }
     }
 
     func visit(_ type: TypeID) {
@@ -68,23 +68,25 @@ class DependencyVisitor {
             defer {
                 path.removeLast()
             }
-
-            if let provider = resolved.graph[pathComponent.type] {
-                if let error = provider.checkIsResolvable() {
-                    result = .failure(error)
-                } else {
-                    var errors: [String: DependencyErrors] = [:]
-                    for requirement in provider.requirements {
-                        errors[requirement.key] =
-                            runVisit(
-                                PathComponent(name: requirement.key, type: requirement.value)
-                            ).error
-                    }
-                    result = errors.isEmpty ? .success(()) : .failure(.nested(errors))
-                }
-            } else {
-                result = .failure(.noProvider(type: pathComponent.type))
-            }
+            
+            fatalError()
+//
+//            if let provider = resolved.graph[pathComponent.type] {
+//                if let error = provider.checkIsResolvable() {
+//                    result = .failure(error)
+//                } else {
+//                    var errors: [String: DependencyErrors] = [:]
+//                    for requirement in provider.requirements {
+//                        errors[requirement.key] =
+//                            runVisit(
+//                                PathComponent(name: requirement.key, type: requirement.value)
+//                            ).error
+//                    }
+//                    result = errors.isEmpty ? .success(()) : .failure(.nested(errors))
+//                }
+//            } else {
+//                result = .failure(.noProvider(type: pathComponent.type))
+//            }
 
         }
 
@@ -165,8 +167,23 @@ class DotGraphPrinter: DependencyVisitor {
 
     var sourceNode: TypeID? { path.last?.type }
 
+    var referencedNodes: Set<TypeID> = []
+    
+    override func run() throws {
+        try super.run()
+        
+//        let unreferenced = Set(self.resolved.graph.keys).subtracting(referencedNodes)
+//        
+//        for node in unreferenced {
+//            dotGraph.edges.append(
+//                DotGraph.Edge(from: "root", to: node.description)
+//            )
+//        }
+    }
+
     override func visit(_ type: TypeID) {
         if let sourceNode = sourceNode {
+            referencedNodes.insert(type)
             dotGraph.edges.append(
                 DotGraph.Edge(from: sourceNode.description, to: type.description)
             )
@@ -183,7 +200,6 @@ class DotGraphPrinter: DependencyVisitor {
                 "color": result.isSuccess ? "green" : "red"
             ]
         )
-
     }
 
 }

@@ -1,4 +1,4 @@
-class WeakSingletonProvider<Value: AnyObject>: Provider {
+class WeakSingletonProvider<Value: AnyObject>: Provider, DependencyDeclaration {
     var typeName: ProviderType { .weakSingleton }
     typealias Provided = Value
 
@@ -26,5 +26,9 @@ class WeakSingletonProvider<Value: AnyObject>: Provider {
         }
         return resolved
     }
-    
+
+    func makeProvider() -> _AnyProvider {
+        return WeakSingletonProvider(requirements: requirements, factory: factory)
+    }
+
 }

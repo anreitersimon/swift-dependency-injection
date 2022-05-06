@@ -21,7 +21,7 @@ extension String {
 }
 
 extension Extension {
-    var extendedScope: InjectableProtocol? {
+    var extendedFactoryType: InjectableProtocol? {
         let sanitized = self.extendedType.removingPrefix("\(Constants.runtimeLibraryName).")
 
         switch sanitized {
@@ -183,9 +183,25 @@ public enum DependencyAnalysis {
         }
 
         extensionLoop: for ext in file.extensions {
-            guard let extendedScope = ext.extendedScope else {
+            guard let extendedFactoryType = ext.extendedFactoryType else {
                 continue extensionLoop
             }
+            
+            var extendedScope: TypeSignature?
+
+            if !ext.generics.requirements.isEmpty {
+                guard let requirement = ext.generics.requirements.first,
+                    ext.generics.requirements.count == 1,
+                    requirement.isSameType,
+                    requirement.left.description == "Scope"
+                else {
+                    diagnostics.error("extensions can only declare like 'where Scope == <Scope>'")
+                    continue extensionLoop
+                }
+
+                extendedScope = requirement.right
+            }
+
             for function in ext.functions {
                 if !function.modifiers.contains(.static) {
                     diagnostics.error(
@@ -221,8 +237,9 @@ public enum DependencyAnalysis {
                 }
                 graph.registerBinding(
                     type: returnType,
-                    kind: extendedScope,
-                    factoryMethod: function
+                    kind: extendedFactoryType,
+                    factoryMethod: function,
+                    scope: extendedScope ?? TypeSignature.simple(name: "GlobalScope")
                 )
             }
         }

@@ -175,6 +175,7 @@ public enum CodeGen {
                 """
                 registry.\(methodName)(
                     ofType: \(typeName ?? "Never.self"),
+                    in: \(binding.scope.asMetatype() ?? "Never.self"),
                     requirements: requirements
                 ) { resolver in
                 """
@@ -207,6 +208,7 @@ public enum CodeGen {
                     """
                     registry.registerAssistedFactory(
                         ofType: \(injectable.fullName).self,
+                        in: \(injectable.fullName).Scope.self,
                         requirements: requirements
                     )
                     """
@@ -227,6 +229,7 @@ public enum CodeGen {
                     """
                     registry.\(methodName)(
                         ofType: \(injectable.fullName).self,
+                        in: \(injectable.fullName).Scope.self,
                         requirements: requirements
                     ) { resolver in
                         \(injectable.fullName).newInstance(resolver: resolver)

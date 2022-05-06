@@ -80,7 +80,10 @@ public struct Generics: Equatable, Codable {
     public static let empty = Generics(parameters: [], requirements: [])
 
     public struct Requirement: Equatable, Codable {
-        public let body: String
+        public let isSameType: Bool
+
+        public let left: TypeSignature
+        public let right: TypeSignature
     }
 
     public struct Parameter: Equatable, Codable {
@@ -99,8 +102,23 @@ public struct Generics: Equatable, Codable {
             )
         }
 
-        let requirements = whereClause?.requirementList.map {
-            Requirement(body: $0.body.trimmed)
+        let requirements: [Requirement]? = whereClause?.requirementList.compactMap {
+            if let sameType = $0.body.as(SameTypeRequirementSyntax.self) {
+                return .init(
+                    isSameType: true,
+                    left: .fromTypeSyntax(sameType.leftTypeIdentifier),
+                    right: .fromTypeSyntax(sameType.rightTypeIdentifier)
+                )
+
+            } else if let conformance = $0.body.as(ConformanceRequirementSyntax.self) {
+                return .init(
+                    isSameType: false,
+                    left: .fromTypeSyntax(conformance.leftTypeIdentifier),
+                    right: .fromTypeSyntax(conformance.rightTypeIdentifier)
+                )
+            } else {
+                return nil
+            }
         }
 
         return Generics(

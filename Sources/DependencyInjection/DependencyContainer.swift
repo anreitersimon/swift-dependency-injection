@@ -1,39 +1,39 @@
-import Foundation
+public class DependencyContainer<Scope: DependencyScope> {
 
-public struct DependencyValidationError: Error {
-    public let issues: [Error]
-}
+    init(
+        graph: DependencyGraph,
+        scope: Scope,
+        parent: DependencyContainer<Scope.Parent>?
+    ) {
+        self.graph = graph
+        self.scope = scope
+        self.parent = parent
+        self.providers = graph.providers(for: Scope.self)
+    }
 
-extension Collection {
-    func withIsLast() -> [(isLast: Bool, element: Element)] {
-        let count = self.count
-        return zip(0..., self).map { (index, element) in
-            (index == count - 1, element)
-        }
+    let graph: DependencyGraph
+    let providers: [TypeID: _AnyProvider]
+    let scope: Scope
+    let parent: DependencyContainer<Scope.Parent>?
+
+    func childContainer<ChildScope: DependencyScope>(
+        scope: ChildScope
+    ) -> DependencyContainer<ChildScope> where ChildScope.Parent == Scope {
+        DependencyContainer<ChildScope>(
+            graph: graph,
+            scope: scope,
+            parent: self
+        )
     }
 }
 
-enum DependencyErrors: Error, CustomDebugStringConvertible, CustomStringConvertible {
-    case setupNotFinished(type: TypeID)
-    case noProvider(type: TypeID)
-    case resolvingAssistedInject(type: TypeID)
-    case cycle(type: TypeID, path: [TypeID])
-    case nested([String: DependencyErrors])
+extension DependencyContainer: DependencyResolver {
 
-    var description: String {
-        switch self {
-        case .setupNotFinished:
-            return "Setup Not Finished"
-        case .noProvider(let type):
-            return "No Provider registered for \(type)"
-        case .resolvingAssistedInject(let type):
-            return "Types using @Assisted annotation cannot be directly Injected \(type)"
-        case .cycle(let type, let path):
-            return "Cycle \(type) Path: \(path.map(\.description).joined(separator: " -> "))"
-        case .nested:
-            return ""
+    public func resolve<Value>(_ type: Value.Type) -> Value {
+        if let provider = self.providers[TypeID(type)] {
+            return try! provider.resolveAny(provider: self) as! Value
+        } else {
+            return parent!.resolve(type)
         }
     }
-
-    var debugDescription: String { description }
 }

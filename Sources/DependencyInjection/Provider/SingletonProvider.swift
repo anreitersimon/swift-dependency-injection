@@ -1,4 +1,4 @@
-class SingletonProvider<Value>: Provider {
+class SingletonProvider<Value>: Provider, DependencyDeclaration {
 
     var typeName: ProviderType { .singleton }
     
@@ -26,5 +26,9 @@ class SingletonProvider<Value>: Provider {
             self.value = resolved
         }
         return resolved
+    }
+    
+    func makeProvider() -> _AnyProvider {
+        SingletonProvider(requirements: requirements, factory: factory)
     }
 }

@@ -1,10 +1,14 @@
 protocol _AnyProvider {
+    func resolveAny(provider: DependencyResolver) throws -> Any
+}
+
+protocol DependencyDeclaration {
     var typeName: ProviderType { get }
     var requirements: [String: TypeID] { get }
 
-    func resolveAny(provider: DependencyResolver) throws -> Any
-
     func checkIsResolvable() -> DependencyErrors?
+    
+    func makeProvider() -> _AnyProvider
 }
 
 enum ProviderType: Int, Comparable, CustomStringConvertible {

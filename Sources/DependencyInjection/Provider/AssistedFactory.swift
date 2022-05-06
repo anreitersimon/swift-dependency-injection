@@ -1,6 +1,4 @@
-
-
-struct AssistedFactory<Value>: Provider {
+struct AssistedFactory<Value>: Provider, DependencyDeclaration {
 
     var typeName: ProviderType { .assistedFactory }
     typealias Provided = Value
@@ -13,5 +11,9 @@ struct AssistedFactory<Value>: Provider {
 
     func checkIsResolvable() -> DependencyErrors? {
         DependencyErrors.resolvingAssistedInject(type: TypeID(Value.self))
+    }
+    
+    func makeProvider() -> _AnyProvider {
+        return self
     }
 }

@@ -1,4 +1,4 @@
-class FactoryProvider<Value>: Provider {
+class FactoryProvider<Value>: Provider, DependencyDeclaration {
     var typeName: ProviderType { .factory }
     
     typealias Provided = Value
@@ -15,5 +15,9 @@ class FactoryProvider<Value>: Provider {
 
     func resolve(provider: DependencyResolver) throws -> Provided {
         return try factory(provider)
+    }
+    
+    func makeProvider() -> _AnyProvider {
+        return FactoryProvider(requirements: requirements, factory: factory)
     }
 }

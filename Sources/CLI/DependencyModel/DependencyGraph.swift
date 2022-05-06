@@ -29,13 +29,15 @@ public struct FileDependencyGraph: Codable {
     public mutating func registerBinding(
         type: TypeSignature,
         kind: InjectableProtocol,
-        factoryMethod: Function
+        factoryMethod: Function,
+        scope: TypeSignature
     ) {
         self.bindings.append(
             BoundType(
                 kind: kind,
                 type: type,
-                factoryMethod: factoryMethod
+                factoryMethod: factoryMethod,
+                scope: scope
             )
         )
 
@@ -89,6 +91,7 @@ public struct BoundType: Codable {
     public let kind: InjectableProtocol
     public let type: TypeSignature
     public let factoryMethod: Function
+    public let scope: TypeSignature
 }
 
 public struct Injection: Codable {
