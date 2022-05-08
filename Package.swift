@@ -5,7 +5,7 @@ import Foundation
 import PackageDescription
 
 let localCLITools =
-    ProcessInfo.processInfo.environment["SWIFT_DEPENDENCY_INJECTION_LOCAL_CLI_TOOLS"] != nil
+    true || ProcessInfo.processInfo.environment["SWIFT_DEPENDENCY_INJECTION_LOCAL_CLI_TOOLS"] != nil
 
 let package = Package(
     name: "swift-dependency-injection",
@@ -21,13 +21,6 @@ let package = Package(
     ],
     dependencies: [],
     targets: [
-        .plugin(
-            name: "DependencyInjectionPlugin",
-            capability: .buildTool(),
-            dependencies: [
-                "swift-dependency-injection"
-            ]
-        ),
         .target(
             name: "DependencyInjection",
             dependencies: [],
@@ -66,133 +59,34 @@ let package = Package(
 )
 
 if localCLITools {
-
-    package.dependencies += [
-        .package(
-            url: "https://github.com/anreitersimon/swift-package-utils",
-            branch: "main"
-        ),
-        .package(
-            url: "https://github.com/apple/swift-syntax.git",
-            branch: "0.50600.1"
-        ),
-        .package(
-            url: "https://github.com/apple/swift-argument-parser",
-            from: "1.0.0"
-        ),
-        .package(
-            url: "https://github.com/pointfreeco/swift-custom-dump",
-            from: "0.3.0"
-        ),
-        .package(
-            url: "https://github.com/pointfreeco/swift-snapshot-testing.git",
-            from: "1.9.0"
-        ),
-    ]
-
-    package.products += [
-        .executable(
-            name: "swift-dependency-injection",
-            targets: ["swift-dependency-injection"]
-        )
-    ]
+    print("\(#file): warning: Using Local Plugin")
+    package.dependencies.append(.package(path: "CLI"))
 
     package.targets += [
-        .executableTarget(
-            name: "swift-dependency-injection",
+        .plugin(
+            name: "DependencyInjectionPlugin",
+            capability: .buildTool(),
             dependencies: [
-                "DependencyInjectionKit",
                 .product(
-                    name: "ArgumentParser",
-                    package: "swift-argument-parser"
-                ),
-            ],
-            path: "Sources/CLI/swift-dependency-injection"
-        ),
-        .target(
-            name: "SourceModel",
-            dependencies: [
-                .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxParser", package: "swift-syntax"),
-            ],
-            path: "Sources/CLI/SourceModel"
-        ),
-        .target(
-            name: "DependencyModel",
-            dependencies: [
-                "SourceModel"
-            ],
-            path: "Sources/CLI/DependencyModel"
-        ),
-        .target(
-            name: "DependencyAnalyzer",
-            dependencies: [
-                "DependencyModel"
-            ],
-            path: "Sources/CLI/DependencyAnalyzer"
-        ),
-        .target(
-            name: "CodeGeneration",
-            dependencies: [
-                "DependencyModel"
-            ],
-            path: "Sources/CLI/CodeGeneration"
-        ),
-        .target(
-            name: "DependencyInjectionKit",
-            dependencies: [
-                "DependencyAnalyzer",
-                "DependencyModel",
-                "CodeGeneration",
-            ],
-            path: "Sources/CLI/DependencyInjectionKit"
-        ),
-        .testTarget(
-            name: "SourceModelTests",
-            dependencies: [
-                "SourceModel",
-                .product(
-                    name: "CustomDump",
-                    package: "swift-custom-dump"
-                ),
-            ],
-            path: "Tests/CLI/SourceModelTests",
-            exclude: [
-                "Fixtures"
+                    name: "swift-dependency-injection",
+                    package: "CLI"
+                )
             ]
-        ),
-        .testTarget(
-            name: "DependencyAnalyzerTests",
-            dependencies: [
-                "DependencyAnalyzer",
-                .product(
-                    name: "CustomDump",
-                    package: "swift-custom-dump"
-                ),
-            ],
-            path: "Tests/CLI/DependencyAnalyzerTests"
-        ),
-        .testTarget(
-            name: "CodeGenerationTests",
-            dependencies: [
-                "CodeGeneration",
-                "DependencyAnalyzer",
-                "SourceModel",
-                .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
-                .product(
-                    name: "CustomDump",
-                    package: "swift-custom-dump"
-                ),
-            ],
-            path: "Tests/CLI/CodeGenerationTests"
-        ),
+        )
     ]
 } else {
     print("\(#file): warning: Using Precompiled Plugin")
-    package.targets.append(
+    package.targets += [
+        .plugin(
+            name: "DependencyInjectionPlugin",
+            capability: .buildTool(),
+            dependencies: [
+                "swift-dependency-injection"
+            ]
+        ),
         .binaryTarget(
             name: "swift-dependency-injection",
             path: "swift-dependency-injection.zip"
-        )
-    )
+        ),
+    ]
 }
