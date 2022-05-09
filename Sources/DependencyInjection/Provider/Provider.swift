@@ -7,7 +7,7 @@ protocol DependencyDeclaration {
     var requirements: [String: TypeID] { get }
 
     func checkIsResolvable() -> DependencyErrors?
-    
+
     func makeProvider() -> _AnyProvider
 }
 

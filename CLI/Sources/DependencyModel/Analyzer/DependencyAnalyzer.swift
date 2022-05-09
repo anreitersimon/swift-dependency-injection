@@ -184,10 +184,6 @@ public struct DependencyGraphCollector {
 
     public mutating func run(_ file: SourceFile) {
 
-        for proto in file.recursiveTypes where proto.kind == .protocol {
-
-        }
-
         for ext in file.extensions where ext.conformsToInjectable {
             diagnostics.error(
                 "Injectable conformance must be declared in the type-declaration",
@@ -197,6 +193,10 @@ public struct DependencyGraphCollector {
 
         for ext in file.extensions {
             collectBindingExtensions(ext)
+        }
+        
+        for type in file.recursiveTypes {
+            collectScopeDeclaration(type)
         }
 
         for type in file.recursiveTypes {

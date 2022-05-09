@@ -1,5 +1,6 @@
 bindings:
-- factoryMethod:
+- accessLevel: internal
+  factoryMethod:
     arguments:
     - attributes: []
       firstName: a
@@ -36,6 +37,35 @@ bindings:
     simple:
       genericArguments: []
       name: Protocol
+- accessLevel: internal
+  factoryMethod:
+    arguments:
+    - attributes: []
+      firstName: a
+      type:
+        simple:
+          genericArguments: []
+          name: ImplicitInitializer
+    generics:
+      parameters: []
+      requirements: []
+    modifiers:
+    - static
+    name: bind
+    returnType:
+      simple:
+        genericArguments: []
+        name: Protocol
+    trailingModifiers: []
+  kind: Injectable
+  scope:
+    simple:
+      genericArguments: []
+      name: GlobalScope
+  type:
+    simple:
+      genericArguments: []
+      name: Protocol
 fileName: MockFile
 imports:
 - attributes: []
@@ -43,7 +73,8 @@ imports:
   path: TestModule
 module: Mock
 provides:
-- fullName: Mock.ExplicitelyInitialized
+- accessLevel: internal
+  fullName: Mock.ExplicitelyInitialized
   initializer:
     arguments:
     - attributes:
@@ -67,7 +98,12 @@ provides:
     trailingModifiers: []
   kind: Injectable
   name: ExplicitelyInitialized
-- fullName: Mock.ExplicitelyInitialized.Nested
+  scope:
+    simple:
+      genericArguments: []
+      name: GlobalScope
+- accessLevel: internal
+  fullName: Mock.ExplicitelyInitialized.Nested
   initializer:
     arguments: []
     generics:
@@ -77,7 +113,12 @@ provides:
     trailingModifiers: []
   kind: Injectable
   name: Nested
-- fullName: Mock.ImplicitInitializer
+  scope:
+    simple:
+      genericArguments: []
+      name: GlobalScope
+- accessLevel: internal
+  fullName: Mock.ImplicitInitializer
   initializer:
     arguments:
     - attributes:
@@ -108,8 +149,24 @@ provides:
     trailingModifiers: []
   kind: Injectable
   name: ImplicitInitializer
-scopes: []
+  scope:
+    simple:
+      genericArguments: []
+      name: GlobalScope
+scopes:
+- name: CustomScope
+  parent:
+    simple:
+      genericArguments: []
+      name: GlobalScope
 uses:
+- arguments:
+  - attributes: []
+    firstName: a
+    type:
+      simple:
+        genericArguments: []
+        name: ImplicitInitializer
 - arguments:
   - attributes: []
     firstName: a

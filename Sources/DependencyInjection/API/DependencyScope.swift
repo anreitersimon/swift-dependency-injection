@@ -1,12 +1,20 @@
 public protocol DependencyScope {
-    associatedtype Parent: DependencyScope = Never
+    associatedtype ParentScope: DependencyScope
 }
 extension Never: DependencyScope {
+    public typealias ParentScope = Never
     static let scopeID = ScopeID(Never.self)
 }
 
-public struct GlobalScope: DependencyScope {}
-public struct ApplicationScope: DependencyScope {}
+public protocol Provides_GlobalScope {}
+public protocol Provides_ApplicationScope: Provides_GlobalScope {}
+
+public struct GlobalScope: DependencyScope, Provides_GlobalScope {
+    public typealias ParentScope = Never
+}
+public struct ApplicationScope: DependencyScope, Provides_ApplicationScope {
+    public typealias ParentScope = GlobalScope
+}
 
 extension DependencyScope {
 
@@ -22,7 +30,7 @@ extension DependencyScope {
 
         parents.append(id)
 
-        Parent.collectType(into: &parents)
+        ParentScope.collectType(into: &parents)
     }
 
     static var applicableScopes: [ScopeID] {

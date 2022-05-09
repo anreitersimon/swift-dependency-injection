@@ -2,7 +2,9 @@ import DependencyInjection
 import ExampleCore
 import Foundation
 
-struct CustomScope: DependencyScope {}
+struct CustomScope: DependencyScope {
+    typealias ParentScope = GlobalScope
+}
 
 class ViewModel: Injectable {
     typealias Scope = CustomScope
@@ -23,6 +25,7 @@ protocol AProtocol2 {}
 struct AProtocolImplementation: Singleton, AProtocol, AProtocol2 {}
 
 extension Dependencies.Factories where Scope == CustomScope {
+    
     static func bind(
         impl: AProtocolImplementation,
         api: AProtocol

@@ -96,12 +96,19 @@ extension Diagnostic {
 extension Generics {
 
     fileprivate func extractScope(diagnostics: Diagnostics) -> TypeSignature? {
+        if requirements.isEmpty {
+            return nil
+        }
+        
         guard let requirement = requirements.first,
             requirements.count == 1,
             requirement.isSameType,
             requirement.left.description == "Scope"
         else {
-            diagnostics.error("extensions can only declare like 'where Scope == <Scope>'")
+            diagnostics.error(
+                "extensions can only declare like 'where Scope == <Scope>'",
+                at: self.requirementsRange?.start
+            )
             return nil
         }
 

@@ -1,0 +1,59 @@
+extensions: []
+fileName: MockFile
+functions: []
+imports:
+- attributes: []
+  modifers: []
+  path: DependencyInjection
+- attributes: []
+  modifers: []
+  path: TestModule
+initializers: []
+module: Mock
+typealiases: []
+types:
+- functions: []
+  generics:
+    parameters: []
+    requirements: []
+  inheritedTypes:
+  - simple:
+      genericArguments: []
+      name: Injectable
+  initializers:
+  - arguments:
+    - attributes:
+      - '@Inject'
+      firstName: a
+      type:
+        simple:
+          genericArguments: []
+          name: I
+    - attributes:
+      - '@Assisted'
+      firstName: b
+      type:
+        simple:
+          genericArguments: []
+          name: Int
+    - attributes: []
+      defaultValue: '1'
+      firstName: bla
+      type:
+        simple:
+          genericArguments: []
+          name: Int
+    generics:
+      parameters: []
+      requirements: []
+    modifiers: []
+    trailingModifiers: []
+  kind: struct
+  modifiers: []
+  module: Mock
+  name: ExplicitelyInitialized
+  scope: Mock
+  typealiases: []
+  types: []
+  variables: []
+variables: []

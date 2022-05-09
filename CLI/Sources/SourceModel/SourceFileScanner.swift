@@ -57,7 +57,8 @@ class SourceFileScanner: SyntaxVisitor {
             trailingModifiers: [],
             generics: Generics.from(
                 parameterClause: node.genericParameterClause,
-                whereClause: node.genericWhereClause
+                whereClause: node.genericWhereClause,
+                context: context
             ),
             sourceRange: node.sourceRange(context: context)
         )
@@ -94,7 +95,8 @@ class SourceFileScanner: SyntaxVisitor {
             modifiers: .fromModifiers(node.modifiers),
             generics: Generics.from(
                 parameterClause: node.genericParameterClause,
-                whereClause: node.genericWhereClause
+                whereClause: node.genericWhereClause,
+                context: context
             ),
             inheritedTypes: node.inheritanceClause?.inheritedTypeCollection
                 .map(\.typeName)
@@ -124,7 +126,8 @@ class SourceFileScanner: SyntaxVisitor {
             modifiers: .fromModifiers(node.modifiers),
             generics: Generics.from(
                 parameterClause: node.genericParameterClause,
-                whereClause: node.genericWhereClause
+                whereClause: node.genericWhereClause,
+                context: context
             ),
             inheritedTypes: node.inheritanceClause?.inheritedTypeCollection
                 .map(\.typeName)
@@ -154,7 +157,8 @@ class SourceFileScanner: SyntaxVisitor {
             modifiers: .fromModifiers(node.modifiers),
             generics: Generics.from(
                 parameterClause: node.genericParameters,
-                whereClause: node.genericWhereClause
+                whereClause: node.genericWhereClause,
+                context: context
             ),
             inheritedTypes: node.inheritanceClause?.inheritedTypeCollection
                 .map(\.typeName)
@@ -184,7 +188,8 @@ class SourceFileScanner: SyntaxVisitor {
             modifiers: .fromModifiers(node.modifiers),
             generics: Generics.from(
                 parameterClause: nil,
-                whereClause: node.genericWhereClause
+                whereClause: node.genericWhereClause,
+                context: context
             ),
             inheritedTypes: node.inheritanceClause?.inheritedTypeCollection
                 .map(\.typeName)
@@ -211,7 +216,8 @@ class SourceFileScanner: SyntaxVisitor {
             modifiers: .fromModifiers(node.modifiers),
             generics: Generics.from(
                 parameterClause: nil,
-                whereClause: node.genericWhereClause
+                whereClause: node.genericWhereClause,
+                context: context
             ),
             inheritedTypes: node.inheritanceClause?.inheritedTypeCollection
                 .map(\.typeName)
@@ -280,7 +286,8 @@ class SourceFileScanner: SyntaxVisitor {
             modifiers: .fromModifiers(node.modifiers),
             generics: Generics.from(
                 parameterClause: node.genericParameterClause,
-                whereClause: node.genericWhereClause
+                whereClause: node.genericWhereClause,
+                context: context
             ),
             trailingModifiers: [],
             returnType: node.signature.output.map { .fromTypeSyntax($0.returnType) },

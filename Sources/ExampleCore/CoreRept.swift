@@ -4,7 +4,7 @@ import Foundation
 protocol RepoProtocol {}
 
 
-public struct CoreRepository: Injectable, RepoProtocol {
+public class CoreRepository: Singleton, RepoProtocol {
     init(
         @Inject service: Service
     ) {

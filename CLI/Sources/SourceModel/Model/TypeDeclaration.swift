@@ -73,12 +73,19 @@ public struct TypeDeclaration: Codable, Equatable, DeclarationScope {
 public struct Generics: Equatable, Codable {
     public let parameters: [Parameter]
     public let requirements: [Requirement]
+    public let parametersRange: SourceRange?
+    public let requirementsRange: SourceRange?
 
     public var isEmpty: Bool {
         return parameters.isEmpty && requirements.isEmpty
     }
 
-    public static let empty = Generics(parameters: [], requirements: [])
+    public static let empty = Generics(
+        parameters: [],
+        requirements: [],
+        parametersRange: nil,
+        requirementsRange: nil
+    )
 
     public struct Requirement: Equatable, Codable {
         public let isSameType: Bool
@@ -94,7 +101,8 @@ public struct Generics: Equatable, Codable {
 
     static func from(
         parameterClause: GenericParameterClauseSyntax?,
-        whereClause: GenericWhereClauseSyntax?
+        whereClause: GenericWhereClauseSyntax?,
+        context: Context
     ) -> Generics {
         let params = parameterClause?.genericParameterList.map {
             Parameter(
@@ -124,7 +132,10 @@ public struct Generics: Equatable, Codable {
 
         return Generics(
             parameters: params ?? [],
-            requirements: requirements ?? []
+            requirements: requirements ?? [],
+            parametersRange: parameterClause?.sourceRange(context: context),
+            requirementsRange:
+                whereClause?.sourceRange(context: context)
         )
     }
 }

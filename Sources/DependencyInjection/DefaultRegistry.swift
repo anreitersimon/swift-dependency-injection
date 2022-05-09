@@ -39,7 +39,7 @@ class DependencyGraph {
     }
 
     @discardableResult
-    private func registerScope<Scope: DependencyScope>(_ scope: Scope.Type) -> ScopeGraph {
+    func registerScope<Scope: DependencyScope>(_ scope: Scope.Type) -> ScopeGraph {
 
         let id = ScopeID(Scope.self)
 
@@ -49,10 +49,10 @@ class DependencyGraph {
 
         let parent: ScopeGraph?
 
-        if Scope.Parent.self == Never.self {
+        if Scope.ParentScope.self == Never.self {
             parent = nil
         } else {
-            parent = registerScope(Scope.Parent.self)
+            parent = registerScope(Scope.ParentScope.self)
         }
 
         let graph = ScopeGraph(parent: parent)
@@ -81,6 +81,10 @@ class DefaultRegistry: DependencyRegistry {
         for subModule in module.submodules {
             registerModule(subModule)
         }
+    }
+    
+    func registerScope<Scope>(_ type: Scope.Type) where Scope : DependencyScope {
+        self.graph.registerScope(type)
     }
 
     func setup(_ modules: DependencyModule.Type...) throws {

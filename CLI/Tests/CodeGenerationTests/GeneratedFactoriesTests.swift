@@ -1,7 +1,7 @@
 import CodeGeneration
 import SnapshotTesting
-import XCTest
 import TestHelpers
+import XCTest
 
 @testable import DependencyModel
 @testable import SourceModel
@@ -46,13 +46,19 @@ class GeneratedFactoriesTests: XCTestCase {
                 }
 
                 class CustomScope: DependencyScope {
-                    typealias Parent = GlobalScope
+                    typealias ParentScope = GlobalScope
                 }
 
                 protocol Protocol {}
 
                 extension Dependencies.Factories {
                     static func bind(a: ImplicitInitializer) -> Protocol where Scope == CustomScope {
+                        a
+                    }
+                }
+
+                extension Dependencies.Factories where Scope == GlobalScope {
+                    static func bind(a: ImplicitInitializer) -> Protocol {
                         a
                     }
                 }
@@ -67,6 +73,8 @@ class GeneratedFactoriesTests: XCTestCase {
         )
 
         let text = CodeGen.generateSources(fileGraph: graph)
+        
+        isRecording = true
 
         assertSnapshot(matching: text, as: .lines)
         assertSnapshot(matching: graph, as: .yaml)

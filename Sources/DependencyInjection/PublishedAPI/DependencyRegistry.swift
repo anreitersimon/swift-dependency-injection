@@ -1,6 +1,8 @@
 public typealias FactoryClosure<Value> = (DependencyResolver) throws -> Value
 
 public protocol DependencyRegistry {
+    
+    func registerScope<Scope: DependencyScope>(_ type: Scope.Type)
 
     func registerSingleton<Value, Scope: DependencyScope>(
         ofType type: Value.Type,

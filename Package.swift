@@ -5,7 +5,7 @@ import Foundation
 import PackageDescription
 
 let localCLITools =
-    true || ProcessInfo.processInfo.environment["SWIFT_DEPENDENCY_INJECTION_LOCAL_CLI_TOOLS"] != nil
+    ProcessInfo.processInfo.environment["SWIFT_DEPENDENCY_INJECTION_LOCAL_CLI_TOOLS"] != nil
 
 let package = Package(
     name: "swift-dependency-injection",

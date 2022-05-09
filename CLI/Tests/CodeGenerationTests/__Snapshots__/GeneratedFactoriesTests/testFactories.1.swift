@@ -7,7 +7,7 @@ extension Mock_Module {
     static func register_MockFile(in registry: DependencyRegistry) {
 
         // Scopes
-        registry.registerScope(CustomScope.self)
+        registerScope(CustomScope.self)
 
         // Types
         Mock.ExplicitelyInitialized.register(in: registry)
@@ -16,10 +16,41 @@ extension Mock_Module {
         // Bindings
         register_Binding_Protocol(in: registry)
         register_Binding_Protocol(in: registry)
+
+        // Container Extensions
+        extension DependencyContainer where Accessing_GlobalScope {
+            internal func explicitelyInitialized() -> ExplicitelyInitialized {
+                resolve()
+            }
+        }
+        extension DependencyContainer where Accessing_GlobalScope {
+            internal func nested() -> Nested {
+                resolve()
+            }
+        }
+        extension DependencyContainer where Accessing_GlobalScope {
+            internal func implicitInitializer(,
+            b: Int
+            ) -> ImplicitInitializer {
+                ImplicitInitializer.newInstance(
+                    resolver: self,
+                    b: b
+                )
+            }
+        }
+        extension DependencyContainer where Accessing_CustomScope {
+            internal func protocol() -> Protocol {
+                resolve()
+            }
+        }
+        extension DependencyContainer where Accessing_GlobalScope {
+            internal func protocol() -> Protocol {
+                resolve()
+            }
+        }
     }
 }
-public protocol Provides_CustomScope: Provides_GlobalScope {}
-extension CustomScope: Provides_CustomScope {}
+public protocol Accessing_CustomScope: Accessing_GlobalScope {}
 // User defined Binding extensions
 
 extension Mock_Module {
@@ -119,35 +150,3 @@ extension Mock.ImplicitInitializer {
     }
 }
 
-
-// Container Extensions
-extension DependencyContainer where Scope: Provides_GlobalScope {
-    internal func explicitelyInitialized() -> ExplicitelyInitialized {
-        resolve()
-    }
-}
-extension DependencyContainer where Scope: Provides_GlobalScope {
-    internal func nested() -> Nested {
-        resolve()
-    }
-}
-extension DependencyContainer where Scope: Provides_GlobalScope {
-    internal func implicitInitializer(
-        b: Int
-    ) -> ImplicitInitializer {
-        ImplicitInitializer.newInstance(
-            resolver: self,
-            b: b
-        )
-    }
-}
-extension DependencyContainer where Scope: Provides_CustomScope {
-    internal func protocol() -> Protocol {
-        resolve()
-    }
-}
-extension DependencyContainer where Scope: Provides_GlobalScope {
-    internal func protocol() -> Protocol {
-        resolve()
-    }
-}

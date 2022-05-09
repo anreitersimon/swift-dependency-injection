@@ -4,13 +4,13 @@ import SourceModel
 public struct FileDependencyGraph: Codable {
     public let fileName: String
     public let module: String
-    
+
     public var imports: [Import] = []
     public var scopes: [ScopeDefinition] = []
-    
+
     public var provides: [ProvidedType] = []
     public var bindings: [Binding] = []
-    
+
     public var uses: [Injection] = []
 
     public mutating func registerInjectableType(
@@ -20,6 +20,8 @@ public struct FileDependencyGraph: Codable {
     ) {
         self.provides.append(
             ProvidedType(
+                accessLevel: type.accessLevel,
+                scope: type.scope ?? .simple(name: "GlobalScope"),
                 kind: kind,
                 name: type.name,
                 fullName: type.fullyQualifiedName,
@@ -38,6 +40,7 @@ public struct FileDependencyGraph: Codable {
     ) {
         self.bindings.append(
             Binding(
+                accessLevel: factoryMethod.accessLevel,
                 kind: kind,
                 type: type,
                 factoryMethod: factoryMethod,
@@ -85,6 +88,8 @@ public struct ModuleDependencyGraph: Codable {
 public struct TopLevelDependencyGraph: Codable {}
 
 public struct ProvidedType: Codable {
+    public let accessLevel: AccessLevel
+    public let scope: TypeSignature
     public let kind: InjectableProtocol
     public let name: String
     public let fullName: String
@@ -92,6 +97,7 @@ public struct ProvidedType: Codable {
 }
 
 public struct Binding: Codable {
+    public let accessLevel: AccessLevel
     public let kind: InjectableProtocol
     public let type: TypeSignature
     public let factoryMethod: Function
@@ -100,7 +106,7 @@ public struct Binding: Codable {
 
 public struct ScopeDefinition: Codable {
     public let name: String
-    public let parent: String
+    public let parent: TypeSignature
 }
 
 public struct Injection: Codable {
@@ -109,4 +115,8 @@ public struct Injection: Codable {
     public init(arguments: [Function.Argument]) {
         self.arguments = arguments
     }
+}
+
+extension TypeDeclaration {
+
 }

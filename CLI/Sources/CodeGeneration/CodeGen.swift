@@ -9,10 +9,10 @@ extension String {
     public func swiftIdentifier() -> String {
         return self.filter { $0.isNumber || $0.isLetter }
     }
-    
+
     public var lowerFirst: String {
         guard let firstCharacter = self.first else { return self }
-        
+
         return firstCharacter.lowercased() + self.dropFirst()
     }
 }
@@ -104,10 +104,22 @@ public enum CodeGen {
                 "static func register_\(graph.fileName.swiftIdentifier())(in registry: DependencyRegistry)"
             ) {
 
+                $0.endLine()
+                $0.writeLine("// Scopes")
+                for scope in graph.scopes {
+                    $0.writeLine("registry.registerScope(\(scope.name).self)")
+                }
+
+                $0.endLine()
+                $0.writeLine("// Types")
+
                 for provided in graph.provides
                 where !provided.initializer.arguments.contains(where: \.isAssisted) {
                     $0.writeLine("\(provided.fullName).register(in: registry)")
                 }
+
+                $0.endLine()
+                $0.writeLine("// Bindings")
 
                 for binding in graph.bindings {
                     $0.writeLine(
@@ -117,18 +129,26 @@ public enum CodeGen {
             }
         }
 
+        for scope in graph.scopes {
+            writer.writeMultiline(
+                """
+                public protocol Provides_\(scope.name): Provides_\(scope.parent.description) {}
+
+                extension \(scope.name): Provides_\(scope.name) {}
+                """
+            )
+        }
+
         writer.writeLine("// User defined Binding extensions")
         writer.endLine()
 
         writer.scope("extension \(graph.module)_Module") {
             for binding in graph.bindings {
-
                 generateCustomBinding(in: $0, binding: binding)
-
             }
         }
 
-        writer.writeLine("// Provied Types")
+        writer.writeLine("// Provided Types")
         writer.endLine()
 
         for provided in graph.provides {
@@ -139,6 +159,29 @@ public enum CodeGen {
         }
 
         writer.endLine()
+
+        writer.endLine()
+        writer.writeLine("// Container Extensions")
+
+        for provided in graph.provides {
+            generateContainerFactoryMethod(
+                in: writer,
+                accessLevel: provided.accessLevel,
+                typeName: provided.name,
+                scope: provided.scope.description,
+                arguments: provided.initializer.arguments
+            )
+        }
+
+        for binding in graph.bindings {
+            generateContainerFactoryMethod(
+                in: writer,
+                accessLevel: binding.accessLevel,
+                typeName: binding.type.description,
+                scope: binding.scope.description,
+                arguments: []
+            )
+        }
 
         return writer.builder
     }
@@ -247,6 +290,40 @@ public enum CodeGen {
         }
     }
 
+    private static func generateContainerFactoryMethod(
+        in writer: FileWriter,
+        accessLevel: AccessLevel,
+        typeName: String,
+        scope: String,
+        arguments: [Function.Argument]
+    ) {
+        let allArguments = arguments.filter { $0.isAssisted || $0.isInjected }
+        let assisted = allArguments.filter(\.isAssisted)
+        var actualArguments = assisted
+        actualArguments.insert(Function.Argument(firstName: "resolver"), at: 0)
+
+        writer.scope("extension DependencyContainer where Scope: Provides_\(scope)") {
+
+            $0.write(
+                "\(accessLevel.rawValue) func \(typeName.swiftIdentifier().lowerFirst)"
+            )
+            
+            $0.writeDeclarationArguments(assisted)
+
+            $0.scope(" -> \(typeName)") {
+                if assisted.isEmpty {
+                    $0.writeLine("resolve()")
+                } else {
+                    $0.write("\(typeName).newInstance")
+                    $0.writeCallArguments(actualArguments) {
+                        $0.firstName == "resolver" ? "self" : nil
+                    }
+                }
+            }
+
+        }
+    }
+
     private static func generateTypeFactory(
         in writer: FileWriter,
         injectable: ProvidedType
@@ -302,6 +379,45 @@ public enum CodeGen {
 }
 
 extension FileWriter {
+
+    func writeDeclarationArguments(
+        _ arguments: [Function.Argument]
+    ) {
+        self.write("(")
+        self.indent {
+
+            var isFirst = true
+
+            for argument in arguments {
+
+                if !isFirst {
+                    $0.write(",")
+                }
+                $0.endLine()
+
+                if let outerLabel = argument.firstName {
+                    $0.write(outerLabel)
+                    if let internalName = argument.secondName {
+                        $0.write(" ")
+                        $0.write(internalName)
+                    }
+                }
+                $0.write(": \(argument.type?.description ?? "")")
+                
+                if let defaultValue = argument.defaultValue {
+                    $0.write(" = \(defaultValue)")
+                }
+                isFirst = false
+            }
+        }
+
+        if !arguments.isEmpty {
+            endLine()
+        }
+
+        self.write(")")
+
+    }
 
     func writeCallArguments(
         _ arguments: [Function.Argument],

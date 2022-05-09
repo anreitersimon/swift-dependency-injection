@@ -3,7 +3,7 @@ public class DependencyContainer<Scope: DependencyScope> {
     init(
         graph: DependencyGraph,
         scope: Scope,
-        parent: DependencyContainer<Scope.Parent>?
+        parent: DependencyContainer<Scope.ParentScope>?
     ) {
         self.graph = graph
         self.scope = scope
@@ -14,11 +14,11 @@ public class DependencyContainer<Scope: DependencyScope> {
     let graph: DependencyGraph
     let providers: [TypeID: _AnyProvider]
     let scope: Scope
-    let parent: DependencyContainer<Scope.Parent>?
+    let parent: DependencyContainer<Scope.ParentScope>?
 
-    func childContainer<ChildScope: DependencyScope>(
+    public func childContainer<ChildScope: DependencyScope>(
         scope: ChildScope
-    ) -> DependencyContainer<ChildScope> where ChildScope.Parent == Scope {
+    ) -> DependencyContainer<ChildScope> where ChildScope.ParentScope == Scope {
         DependencyContainer<ChildScope>(
             graph: graph,
             scope: scope,

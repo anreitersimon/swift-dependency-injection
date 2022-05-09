@@ -1,4 +1,6 @@
+import SnapshotTesting
 import SourceModel
+import TestHelpers
 import XCTest
 
 @testable import DependencyModel
@@ -16,15 +18,11 @@ class AnalizerTests: XCTestCase {
     }
 
     func testFactories() throws {
-        let diagnostics = DiagnosticsCollector()
 
         let file = try SourceFile.parse(
             module: "Mock",
             fileName: "MockFile",
             source: """
-                import DependencyInjection
-                import TestModule
-
                 struct ExplicitelyInitialized: Injectable {
                     init(
                         @Inject a: I,
@@ -32,26 +30,10 @@ class AnalizerTests: XCTestCase {
                         bla: Int = 1
                     ) {}
                 }
-
-                struct ImplicitInitializer: Injectable {
-                    @Inject var a: I
-                    @Assisted var b: Int
-                    var bla: Int = 1
-                }
                 """
         )
 
-//        guard let e = DependencyAnalysis.analyze(
-//            file: file,
-//            diagnostics: diagnostics
-//        ) else {
-//            XCTFail()
-//            return
-//        }
-//
-//        for (type, initializer) in e {
-//            print(initializer)
-//        }
+        assertSnapshot(matching: file, as: .yaml)
     }
 
 }

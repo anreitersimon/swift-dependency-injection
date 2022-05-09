@@ -30,6 +30,22 @@ public struct Function: Equatable, Codable {
     public var sourceRange: SourceRange? = nil
 
     public struct Argument: Equatable, Codable, CustomStringConvertible {
+        public init(
+            firstName: String? = nil,
+            secondName: String? = nil,
+            type: TypeSignature? = nil,
+            attributes: [String] = [],
+            defaultValue: String? = nil,
+            sourceRange: SourceRange? = nil
+        ) {
+            self.firstName = firstName
+            self.secondName = secondName
+            self.type = type
+            self.attributes = attributes
+            self.defaultValue = defaultValue
+            self.sourceRange = sourceRange
+        }
+
         public var firstName: String?
         public var secondName: String?
         public var type: TypeSignature?
