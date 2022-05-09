@@ -17,10 +17,9 @@ steps:
   with:
     swift-version: ${{ matrix.swift }}
 - name: Checkout the code
-    uses: actions/checkout@v3.0.2
-
+  uses: actions/checkout@v3.0.2
 - name: Build CLI
   run: cd CLI && swift build -v
-  
+
 - name: Test CLI
   run: cd CLI && swift test -v
