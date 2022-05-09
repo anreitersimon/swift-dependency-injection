@@ -1,3 +1,4 @@
+name: CI
 on:
   push:
     branches: [ main ]
@@ -6,20 +7,20 @@ on:
   schedule: #triggering the jobs according to predefined schedule
     - cron: 0 0 * * * #trigger once a day, according to the cron syntax
 
-name: Swift ${{ matrix.swift }} on ${{ matrix.os }}
-runs-on: ${{ matrix.os }}
-strategy:
-  matrix:
-    os: [ubuntu-latest, macos-latest]
-    swift: ["5.6.1"]
-steps:
-- uses: swift-actions/setup-swift@v1
-  with:
-    swift-version: ${{ matrix.swift }}
-- name: Checkout the code
-  uses: actions/checkout@v3.0.2
-- name: Build CLI
-  run: cd CLI && swift build -v
-
-- name: Test CLI
-  run: cd CLI && swift test -v
+jobs:
+  build:
+    name: Swift ${{ matrix.swift }} on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        swift: ["5.6.1"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: swift-actions/setup-swift@v1
+        with:
+          swift-version: ${{ matrix.swift }}
+      - uses: actions/checkout@v3
+      - name: Build
+        run: cd CLI && swift build
+      - name: Run tests
+        run: cd CLI && swift test
