@@ -4,9 +4,13 @@ import SourceModel
 public struct FileDependencyGraph: Codable {
     public let fileName: String
     public let module: String
+    
     public var imports: [Import] = []
+    public var scopes: [ScopeDefinition] = []
+    
     public var provides: [ProvidedType] = []
-    public var bindings: [BoundType] = []
+    public var bindings: [Binding] = []
+    
     public var uses: [Injection] = []
 
     public mutating func registerInjectableType(
@@ -33,7 +37,7 @@ public struct FileDependencyGraph: Codable {
         scope: TypeSignature
     ) {
         self.bindings.append(
-            BoundType(
+            Binding(
                 kind: kind,
                 type: type,
                 factoryMethod: factoryMethod,
@@ -87,11 +91,16 @@ public struct ProvidedType: Codable {
     public let initializer: Initializer
 }
 
-public struct BoundType: Codable {
+public struct Binding: Codable {
     public let kind: InjectableProtocol
     public let type: TypeSignature
     public let factoryMethod: Function
     public let scope: TypeSignature
+}
+
+public struct ScopeDefinition: Codable {
+    public let name: String
+    public let parent: String
 }
 
 public struct Injection: Codable {

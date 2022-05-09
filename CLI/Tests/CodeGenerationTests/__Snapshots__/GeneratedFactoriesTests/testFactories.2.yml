@@ -1,0 +1,157 @@
+bindings:
+- factoryMethod:
+    arguments:
+    - attributes: []
+      firstName: a
+      type:
+        simple:
+          genericArguments: []
+          name: ImplicitInitializer
+    generics:
+      parameters: []
+      requirements:
+      - isSameType: true
+        left:
+          simple:
+            genericArguments: []
+            name: Scope
+        right:
+          simple:
+            genericArguments: []
+            name: CustomScope
+    modifiers:
+    - static
+    name: bind
+    returnType:
+      simple:
+        genericArguments: []
+        name: Protocol
+    trailingModifiers: []
+  kind: Injectable
+  scope:
+    simple:
+      genericArguments: []
+      name: CustomScope
+  type:
+    simple:
+      genericArguments: []
+      name: Protocol
+fileName: MockFile
+imports:
+- attributes: []
+  modifers: []
+  path: TestModule
+module: Mock
+provides:
+- fullName: Mock.ExplicitelyInitialized
+  initializer:
+    arguments:
+    - attributes:
+      - '@Inject'
+      firstName: a
+      type:
+        simple:
+          genericArguments: []
+          name: I
+    - attributes: []
+      defaultValue: '1'
+      firstName: bla
+      type:
+        simple:
+          genericArguments: []
+          name: Int
+    generics:
+      parameters: []
+      requirements: []
+    modifiers: []
+    trailingModifiers: []
+  kind: Injectable
+  name: ExplicitelyInitialized
+- fullName: Mock.ExplicitelyInitialized.Nested
+  initializer:
+    arguments: []
+    generics:
+      parameters: []
+      requirements: []
+    modifiers: []
+    trailingModifiers: []
+  kind: Injectable
+  name: Nested
+- fullName: Mock.ImplicitInitializer
+  initializer:
+    arguments:
+    - attributes:
+      - '@Inject'
+      firstName: a
+      type:
+        simple:
+          genericArguments: []
+          name: I
+    - attributes:
+      - '@Assisted'
+      firstName: b
+      type:
+        simple:
+          genericArguments: []
+          name: Int
+    - attributes: []
+      defaultValue: '1'
+      firstName: bla
+      type:
+        simple:
+          genericArguments: []
+          name: Int
+    generics:
+      parameters: []
+      requirements: []
+    modifiers: []
+    trailingModifiers: []
+  kind: Injectable
+  name: ImplicitInitializer
+scopes: []
+uses:
+- arguments:
+  - attributes: []
+    firstName: a
+    type:
+      simple:
+        genericArguments: []
+        name: ImplicitInitializer
+- arguments:
+  - attributes:
+    - '@Inject'
+    firstName: a
+    type:
+      simple:
+        genericArguments: []
+        name: I
+  - attributes: []
+    defaultValue: '1'
+    firstName: bla
+    type:
+      simple:
+        genericArguments: []
+        name: Int
+- arguments: []
+- arguments:
+  - attributes:
+    - '@Inject'
+    firstName: a
+    type:
+      simple:
+        genericArguments: []
+        name: I
+  - attributes:
+    - '@Assisted'
+    firstName: b
+    type:
+      simple:
+        genericArguments: []
+        name: Int
+  - attributes: []
+    defaultValue: '1'
+    firstName: bla
+    type:
+      simple:
+        genericArguments: []
+        name: Int

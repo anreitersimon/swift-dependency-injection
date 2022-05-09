@@ -46,6 +46,8 @@ class SourceFileScanner: SyntaxVisitor {
         return .skipChildren
     }
 
+    // MARK: - Initializer -
+
     override func visit(
         _ node: InitializerDeclSyntax
     ) -> SyntaxVisitorContinueKind {
@@ -80,6 +82,8 @@ class SourceFileScanner: SyntaxVisitor {
         return .skipChildren
     }
 
+    // MARK: - Class -
+
     override func visit(_ node: ClassDeclSyntax) -> SyntaxVisitorContinueKind {
 
         let typeDecl = TypeDeclaration(
@@ -107,6 +111,8 @@ class SourceFileScanner: SyntaxVisitor {
         let typeDecl = scopes.removeLast() as! TypeDeclaration
         currentScope.types.append(typeDecl)
     }
+
+    // MARK: - Struct -
 
     override func visit(_ node: StructDeclSyntax) -> SyntaxVisitorContinueKind {
 
@@ -136,6 +142,8 @@ class SourceFileScanner: SyntaxVisitor {
         currentScope.types.append(typeDecl)
     }
 
+    // MARK: - Enum -
+
     override func visit(_ node: EnumDeclSyntax) -> SyntaxVisitorContinueKind {
 
         let typeDecl = TypeDeclaration(
@@ -164,6 +172,38 @@ class SourceFileScanner: SyntaxVisitor {
         currentScope.types.append(typeDecl)
     }
 
+    // MARK: - Protocol -
+
+    override func visit(_ node: ProtocolDeclSyntax) -> SyntaxVisitorContinueKind {
+
+        let typeDecl = TypeDeclaration(
+            kind: .enum,
+            module: context.moduleName,
+            name: node.identifier.trimmed,
+            scope: path,
+            modifiers: .fromModifiers(node.modifiers),
+            generics: Generics.from(
+                parameterClause: nil,
+                whereClause: node.genericWhereClause
+            ),
+            inheritedTypes: node.inheritanceClause?.inheritedTypeCollection
+                .map(\.typeName)
+                .map(TypeSignature.fromTypeSyntax(_:)) ?? [],
+            sourceRange: node.sourceRange(context: context)
+        )
+
+        scopes.append(typeDecl)
+
+        return .visitChildren
+    }
+
+    override func visitPost(_ node: ProtocolDeclSyntax) {
+        let typeDecl = scopes.removeLast() as! TypeDeclaration
+        currentScope.types.append(typeDecl)
+    }
+
+    // MARK: - Extension -
+
     override func visit(_ node: ExtensionDeclSyntax) -> SyntaxVisitorContinueKind {
         let typeDecl = Extension(
             extendedType: node.extendedType.trimmed,
@@ -186,6 +226,18 @@ class SourceFileScanner: SyntaxVisitor {
     override func visitPost(_ node: ExtensionDeclSyntax) {
         let typeDecl = scopes.removeLast() as! Extension
         sourceFile.extensions.append(typeDecl)
+    }
+
+    override func visit(_ node: TypealiasDeclSyntax) -> SyntaxVisitorContinueKind {
+        currentScope.typealiases.append(
+            TypeAlias(
+                modifiers: .fromModifiers(node.modifiers),
+                identifier: node.identifier.trimmed,
+                type: node.initializer.map { .fromTypeSyntax($0.value) },
+                sourceRange: node.sourceRange(context: context)
+            )
+        )
+        return .visitChildren
     }
 
     override func visit(

@@ -5,12 +5,29 @@ import DependencyInjection
 // MARK: - File Extension -
 extension Mock_Module {
     static func register_MockFile(in registry: DependencyRegistry) {
+        Mock.ExplicitelyInitialized.register(in: registry)
         Mock.ExplicitelyInitialized.Nested.register(in: registry)
+        register_Binding_Protocol(in: registry)
     }
 }
 // User defined Binding extensions
 
 extension Mock_Module {
+    fileprivate static func register_Binding_Protocol(in registry: DependencyRegistry) {
+        let requirements: [String: Any.Type] = [
+            "a": ImplicitInitializer.self,
+        ]
+
+        registry.registerFactory(
+            ofType: Protocol.self,
+            in: CustomScope.self,
+            requirements: requirements
+        ) { resolver in
+            Dependencies.Factories.bind(
+                a: resolver.resolve()
+            )
+        }
+    }
 }
 // Provied Types
 
@@ -20,19 +37,19 @@ extension Mock.ExplicitelyInitialized {
             "a": I.self,
         ]
 
-        registry.registerAssistedFactory(
+        registry.registerFactory(
             ofType: Mock.ExplicitelyInitialized.self,
             in: Mock.ExplicitelyInitialized.Scope.self,
             requirements: requirements
-        )
+        ) { resolver in
+            Mock.ExplicitelyInitialized.newInstance(resolver: resolver)
+        }
     }
-    public static func newInstance(
-        resolver: DependencyResolver = Dependencies.sharedResolver,
-        b: Int
+    fileprivate static func newInstance(
+        resolver: DependencyResolver = Dependencies.sharedResolver
     ) -> Mock.ExplicitelyInitialized {
         Mock.ExplicitelyInitialized(
-            a: resolver.resolve(),
-            b: b
+            a: resolver.resolve()
         )
     }
 }
@@ -48,7 +65,7 @@ extension Mock.ExplicitelyInitialized.Nested {
             Mock.ExplicitelyInitialized.Nested.newInstance(resolver: resolver)
         }
     }
-    public static func newInstance(
+    fileprivate static func newInstance(
         resolver: DependencyResolver = Dependencies.sharedResolver
     ) -> Mock.ExplicitelyInitialized.Nested {
         Mock.ExplicitelyInitialized.Nested()
@@ -66,33 +83,11 @@ extension Mock.ImplicitInitializer {
             requirements: requirements
         )
     }
-    public static func newInstance(
+    fileprivate static func newInstance(
         resolver: DependencyResolver = Dependencies.sharedResolver,
         b: Int
     ) -> Mock.ImplicitInitializer {
         Mock.ImplicitInitializer(
-            a: resolver.resolve(),
-            b: b
-        )
-    }
-}
-extension Mock.ImplicitInitializer.Nested {
-    fileprivate static func register(in registry: DependencyRegistry) {
-        let requirements: [String: Any.Type] = [
-            "a": I.self,
-        ]
-
-        registry.registerAssistedFactory(
-            ofType: Mock.ImplicitInitializer.Nested.self,
-            in: Mock.ImplicitInitializer.Nested.Scope.self,
-            requirements: requirements
-        )
-    }
-    public static func newInstance(
-        resolver: DependencyResolver = Dependencies.sharedResolver,
-        b: Int
-    ) -> Mock.ImplicitInitializer.Nested {
-        Mock.ImplicitInitializer.Nested(
             a: resolver.resolve(),
             b: b
         )

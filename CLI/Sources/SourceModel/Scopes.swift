@@ -12,6 +12,7 @@ protocol DeclarationScope {
     var types: [TypeDeclaration] { get set }
 
     var initializers: [Initializer] { get set }
+    var typealiases: [TypeAlias] { get set }
     var variables: [Variable] { get set }
     var functions: [Function] { get set }
 }

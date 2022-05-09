@@ -1,0 +1,17 @@
+extensions: []
+fileName: <in-memory>
+functions: []
+imports: []
+initializers: []
+module: Mock
+typealiases: []
+types: []
+variables:
+- attributes: []
+  isStored: true
+  modifiers: []
+  name: variable
+  type:
+    simple:
+      genericArguments: []
+      name: Int

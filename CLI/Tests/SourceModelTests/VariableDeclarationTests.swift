@@ -1,5 +1,4 @@
-import CustomDump
-import SwiftUI
+import SnapshotTesting
 import XCTest
 
 @testable import SourceModel
@@ -9,7 +8,9 @@ class VariableDeclarationTests: XCTestCase {
     func expectVariable(
         _ input: String,
         _ expected: Variable,
-        file: StaticString = #filePath
+        file: StaticString = #filePath,
+        testName: String = #function,
+        line: UInt = #line
     ) throws {
         let parsed = try SourceFile.parse(
             module: "Mock",
@@ -17,10 +18,13 @@ class VariableDeclarationTests: XCTestCase {
         )
 
         XCTAssertEqual(parsed.variables.count, 1, file: file)
-        XCTAssertNoDifference(
-            parsed.variables.first,
-            expected,
-            file: file
+
+        assertSnapshot(
+            matching: parsed,
+            as: .yaml,
+            file: file,
+            testName: testName,
+            line: line
         )
     }
 

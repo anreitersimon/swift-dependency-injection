@@ -1,10 +1,10 @@
 import CodeGeneration
-import CustomDump
-import XCTest
-
-@testable import DependencyAnalyzer
-@testable import SourceModel
 import SnapshotTesting
+import XCTest
+import TestHelpers
+
+@testable import DependencyModel
+@testable import SourceModel
 
 class DiagnosticsCollector: Diagnostics {
     var diagnostics: [Diagnostic] = []
@@ -26,9 +26,10 @@ class GeneratedFactoriesTests: XCTestCase {
                 import TestModule
 
                 struct ExplicitelyInitialized: Injectable {
+                    typealias Scope = CustomScope
+                    
                     init(
                         @Inject a: I,
-                        @Assisted b: Int,
                         bla: Int = 1
                     ) {}
 
@@ -44,11 +45,15 @@ class GeneratedFactoriesTests: XCTestCase {
                     var bla: Int = 1
                 }
 
-                extension ImplicitInitializer where Scope == CustomScope, A: B {
-                    struct Nested: Injectable {
-                        @Inject var a: I
-                        @Assisted var b: Int
-                        var bla: Int = 1
+                class CustomScope: DependencyScope {
+                    typealias Parent = GlobalScope
+                }
+
+                protocol Protocol {}
+
+                extension Dependencies.Factories {
+                    static func bind(a: ImplicitInitializer) -> Protocol where Scope == CustomScope {
+                        a
                     }
                 }
                 """
@@ -56,16 +61,16 @@ class GeneratedFactoriesTests: XCTestCase {
 
         let diagnostics = DiagnosticsCollector()
 
-        let graph = try DependencyAnalysis.extractGraph(
+        let graph = try DependencyGraphCollector.extractGraph(
             file: file,
             diagnostics: diagnostics
         )
 
         let text = CodeGen.generateSources(fileGraph: graph)
 
-        
         assertSnapshot(matching: text, as: .lines)
-        
+        assertSnapshot(matching: graph, as: .yaml)
+
     }
 
 }

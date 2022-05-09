@@ -5,6 +5,7 @@ public struct Extension: Equatable, Codable, DeclarationScope {
     public var variables: [Variable] = []
     public var functions: [Function] = []
     public var types: [TypeDeclaration] = []
+    public var typealiases: [TypeAlias] = []
 
     public let scope: String
     public let modifiers: [Modifier]

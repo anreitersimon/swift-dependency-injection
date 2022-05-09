@@ -1,5 +1,4 @@
 import CodeGeneration
-import DependencyAnalyzer
 import DependencyModel
 import Foundation
 import SourceModel
@@ -31,7 +30,7 @@ public struct Generator {
             file: inputFile
         )
 
-        let fileGraph = try DependencyAnalysis.extractGraph(
+        let fileGraph = try DependencyGraphCollector.extractGraph(
             file: sourceFile,
             diagnostics: diagnostics
         )

@@ -1,6 +1,7 @@
+import SnapshotTesting
 import XCTest
+
 @testable import SourceModel
-import CustomDump
 
 class TypeInferenceTests: XCTestCase {
 
@@ -20,12 +21,9 @@ class TypeInferenceTests: XCTestCase {
             ),
         ]
 
-        XCTAssertNoDifference(
-            [
-                .optional(.simple(name: "Int")),
-                .optional(.simple(name: "Int")),
-            ],
-            inputs.map { $0.inferLiteralTypes() }
+        assertSnapshot(
+            matching: inputs.map { $0.inferLiteralTypes() },
+            as: .yaml
         )
 
     }
@@ -48,19 +46,11 @@ class TypeInferenceTests: XCTestCase {
             ),
         ]
 
-        XCTAssertNoDifference(
-            [
-                .dictionary(
-                    key: .simple(name: "Int"),
-                    value: .simple(name: "String")
-                ),
-                .dictionary(
-                    key: .simple(name: "Int"),
-                    value: .simple(name: "String")
-                ),
-            ],
-            inputs.map { $0.inferLiteralTypes() }
+        assertSnapshot(
+            matching: inputs.map { $0.inferLiteralTypes() },
+            as: .yaml
         )
+
     }
 
     func testInferArrayLiteral() {
@@ -79,12 +69,9 @@ class TypeInferenceTests: XCTestCase {
             ),
         ]
 
-        XCTAssertNoDifference(
-            [
-                .array(.simple(name: "Int")),
-                .array(.simple(name: "Int")),
-            ],
-            inputs.map { $0.inferLiteralTypes() }
+        assertSnapshot(
+            matching: inputs.map { $0.inferLiteralTypes() },
+            as: .yaml
         )
 
     }

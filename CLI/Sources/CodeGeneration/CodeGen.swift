@@ -9,6 +9,12 @@ extension String {
     public func swiftIdentifier() -> String {
         return self.filter { $0.isNumber || $0.isLetter }
     }
+    
+    public var lowerFirst: String {
+        guard let firstCharacter = self.first else { return self }
+        
+        return firstCharacter.lowercased() + self.dropFirst()
+    }
 }
 
 // TODO: Dont duplicate
@@ -139,7 +145,7 @@ public enum CodeGen {
 
     private static func generateCustomBinding(
         in writer: FileWriter,
-        binding: BoundType
+        binding: Binding
     ) {
 
         writer.scope(
@@ -249,7 +255,7 @@ public enum CodeGen {
             .filter { $0.isAssisted || $0.isInjected }
         let assisted = allArguments.filter(\.isAssisted)
 
-        writer.writeLine("public static func newInstance(")
+        writer.writeLine("fileprivate static func newInstance(")
         writer.indent {
             $0.write("resolver: DependencyResolver = Dependencies.sharedResolver")
 

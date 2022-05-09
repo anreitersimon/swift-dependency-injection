@@ -1,0 +1,15 @@
+extensions: []
+fileName: <in-memory>
+functions: []
+imports: []
+initializers:
+- arguments: []
+  generics:
+    parameters: []
+    requirements: []
+  modifiers: []
+  trailingModifiers: []
+module: Mock
+typealiases: []
+types: []
+variables: []

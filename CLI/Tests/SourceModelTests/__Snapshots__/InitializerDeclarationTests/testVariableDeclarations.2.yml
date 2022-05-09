@@ -1,0 +1,30 @@
+extensions: []
+fileName: <in-memory>
+functions: []
+imports: []
+initializers:
+- arguments:
+  - attributes: []
+    firstName: a
+    type:
+      simple:
+        genericArguments: []
+        name: Int
+  - attributes: []
+    defaultValue: nil
+    firstName: b
+    type:
+      optional:
+        _0:
+          simple:
+            genericArguments: []
+            name: Int
+  generics:
+    parameters: []
+    requirements: []
+  modifiers: []
+  trailingModifiers: []
+module: Mock
+typealiases: []
+types: []
+variables: []

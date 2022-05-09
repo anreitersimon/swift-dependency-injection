@@ -8,6 +8,7 @@ public struct TypeDeclaration: Codable, Equatable, DeclarationScope {
     public let modifiers: [Modifier]
     public var generics: Generics = .empty
     public var inheritedTypes: [TypeSignature] = []
+    public var typealiases: [TypeAlias] = []
 
     public var initializers: [Initializer] = []
     public var variables: [Variable] = []

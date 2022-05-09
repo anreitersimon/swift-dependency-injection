@@ -25,12 +25,12 @@ let package = Package(
             from: "1.0.0"
         ),
         .package(
-            url: "https://github.com/pointfreeco/swift-custom-dump",
-            from: "0.3.0"
-        ),
-        .package(
             url: "https://github.com/pointfreeco/swift-snapshot-testing.git",
             from: "1.9.0"
+        ),
+        .package(
+            url: "https://github.com/jpsim/Yams.git",
+            from: "5.0.1"
         ),
     ],
     targets: [
@@ -58,9 +58,11 @@ let package = Package(
             ]
         ),
         .target(
-            name: "DependencyAnalyzer",
+            name: "TestHelpers",
             dependencies: [
-                "DependencyModel"
+                .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+                .product(name: "Yams", package: "Yams"),
+
             ]
         ),
         .target(
@@ -72,7 +74,6 @@ let package = Package(
         .target(
             name: "DependencyInjectionKit",
             dependencies: [
-                "DependencyAnalyzer",
                 "DependencyModel",
                 "CodeGeneration",
             ]
@@ -81,37 +82,27 @@ let package = Package(
             name: "SourceModelTests",
             dependencies: [
                 "SourceModel",
-                .product(
-                    name: "CustomDump",
-                    package: "swift-custom-dump"
-                ),
+                "TestHelpers",
             ],
-            exclude: [
-                "Fixtures"
-            ]
+            exclude: ["__Snapshots__"]
         ),
         .testTarget(
-            name: "DependencyAnalyzerTests",
+            name: "DependencyModelTests",
             dependencies: [
-                "DependencyAnalyzer",
-                .product(
-                    name: "CustomDump",
-                    package: "swift-custom-dump"
-                ),
-            ]
+                "DependencyModel",
+                "TestHelpers",
+            ],
+            exclude: ["__Snapshots__"]
         ),
         .testTarget(
             name: "CodeGenerationTests",
             dependencies: [
                 "CodeGeneration",
-                "DependencyAnalyzer",
+                "DependencyModel",
                 "SourceModel",
-                .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
-                .product(
-                    name: "CustomDump",
-                    package: "swift-custom-dump"
-                ),
-            ]
+                "TestHelpers",
+            ],
+            exclude: ["__Snapshots__"]
         ),
     ]
 )

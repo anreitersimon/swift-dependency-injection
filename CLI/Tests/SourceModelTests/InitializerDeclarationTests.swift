@@ -1,5 +1,6 @@
-import CustomDump
+import SnapshotTesting
 import SwiftUI
+import TestHelpers
 import XCTest
 
 @testable import SourceModel
@@ -9,7 +10,9 @@ class InitializerDeclarationTests: XCTestCase {
     func expectInitializer(
         _ input: String,
         _ expected: Initializer,
-        file: StaticString = #filePath
+        file: StaticString = #filePath,
+        line: UInt = #line,
+        testName: String = #function
     ) throws {
         let parsed = try SourceFile.parse(
             module: "Mock",
@@ -17,10 +20,13 @@ class InitializerDeclarationTests: XCTestCase {
         )
 
         XCTAssertEqual(parsed.initializers.count, 1, file: file)
-        XCTAssertNoDifference(
-            parsed.initializers.first,
-            expected,
-            file: file
+
+        assertSnapshot(
+            matching: parsed,
+            as: .yaml,
+            file: file,
+            testName: testName,
+            line: line
         )
     }
 

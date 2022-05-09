@@ -1,0 +1,14 @@
+extensions: []
+fileName: <in-memory>
+functions: []
+imports: []
+initializers: []
+module: Mock
+typealiases: []
+types: []
+variables:
+- attributes: []
+  defaultValue: '1'
+  isStored: true
+  modifiers: []
+  name: variable_InferredType

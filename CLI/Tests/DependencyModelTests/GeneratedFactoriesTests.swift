@@ -1,8 +1,7 @@
-import CustomDump
 import SourceModel
 import XCTest
 
-@testable import DependencyAnalyzer
+@testable import DependencyModel
 
 class AnalizerTests: XCTestCase {
 

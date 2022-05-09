@@ -30,6 +30,7 @@ public struct SourceFile: Equatable, Codable, DeclarationScope {
     public let module: String
     public var imports: [Import] = []
     public var types: [TypeDeclaration] = []
+    public var typealiases: [TypeAlias] = []
     public var extensions: [Extension] = []
     public var variables: [Variable] = []
     public var functions: [Function] = []
