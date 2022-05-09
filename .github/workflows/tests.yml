@@ -20,7 +20,12 @@ jobs:
         with:
           swift-version: ${{ matrix.swift }}
       - uses: actions/checkout@v3
-      - name: Build
-        run: cd CLI && swift build
+
+      - name: Test CLI
+        run:  cd CLI && swift test
+
+      - name: Build CLI
+        run:  ./scripts/buil-cli-tools.sh
+
       - name: Run tests
-        run: cd CLI && swift test
+        run: swift test
