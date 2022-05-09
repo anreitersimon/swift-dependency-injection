@@ -58,9 +58,9 @@ public indirect enum TypeSignature: Equatable, Codable {
         case .implicitlyUnwrappedOptional(let typeSignature):
             return "\(typeSignature.description)!"
         case .attributed(let typeSignature):
-            fatalError(typeSignature)
+            fatalError(typeSignature.description)
         case .unknown(let type, let value):
-            fatalError(type, Value)
+            fatalError("\(type) \(value)")
         case .composition(let raw):
             fatalError(raw)
         case .memberType(let raw):
