@@ -14,5 +14,5 @@ types:
           name: Protocol
   kind: class
   module: Mock
-  name: GenericClass
+  name: Generic
   scope: Mock

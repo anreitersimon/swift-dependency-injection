@@ -6,7 +6,7 @@ import XCTest
 
 class TypeSignatureTests: XCTestCase {
 
-    func expectInitializer(
+    func check(
         _ input: String,
         file: StaticString = #filePath,
         line: UInt = #line,
@@ -27,11 +27,10 @@ class TypeSignatureTests: XCTestCase {
     }
 
     func testTypeSignatures() throws {
-
-        try expectInitializer("class Class {}")
-        try expectInitializer("class GenericClass<A> {}")
-        try expectInitializer("class GenericClass<A> where A: Protocol {}")
-        try expectInitializer("class A {}")
+        try check("class Class {}")
+        try check("class Generic<A: Equatable> {}")
+        try check("class Generic<A> where A: Protocol {}")
+        try check("class A {}")
 
     }
 
