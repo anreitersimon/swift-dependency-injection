@@ -7,7 +7,6 @@ class VariableDeclarationTests: XCTestCase {
 
     func expectVariable(
         _ input: String,
-        _ expected: Variable,
         file: StaticString = #filePath,
         testName: String = #function,
         line: UInt = #line
@@ -30,48 +29,20 @@ class VariableDeclarationTests: XCTestCase {
 
     func testVariableDeclarations() throws {
 
+        try expectVariable("let variable: Int")
+
+        try expectVariable("let variable_InferredType = 1")
+
         try expectVariable(
-            "let variable: Int",
-            Variable(
-                name: "variable",
-                type: .simple(name: "Int")
-            )
+            "let variable_Optional: Int?"
         )
 
         try expectVariable(
-            "let variable_InferredType = 1",
-            Variable(
-                name: "variable_InferredType",
-                type: nil,
-                defaultValue: "1"
-            )
+            "let variable_ImplicitlyUnwrappedOptional: Int!"
         )
 
         try expectVariable(
-            "let variable_Optional: Int?",
-            Variable(
-                name: "variable_Optional",
-                type: .optional(.simple(name: "Int"))
-            )
-        )
-
-        try expectVariable(
-            "let variable_ImplicitlyUnwrappedOptional: Int!",
-            Variable(
-                name: "variable_ImplicitlyUnwrappedOptional",
-                type: .implicitlyUnwrappedOptional(.simple(name: "Int"))
-            )
-        )
-
-        try expectVariable(
-            "let variable_ExplicitOptional: Optional<Int>",
-            Variable(
-                name: "variable_ExplicitOptional",
-                type: .simple(
-                    name: "Optional",
-                    genericArguments: [.simple(name: "Int")]
-                )
-            )
+            "let variable_ExplicitOptional: Optional<Int>"
         )
 
     }
@@ -79,12 +50,7 @@ class VariableDeclarationTests: XCTestCase {
     func testVariableAttributes() throws {
 
         try expectVariable(
-            "@Inject var variable: Int",
-            Variable(
-                name: "variable",
-                type: .simple(name: "Int"),
-                attributes: ["@Inject"]
-            )
+            "@Inject var variable: Int"
         )
 
     }

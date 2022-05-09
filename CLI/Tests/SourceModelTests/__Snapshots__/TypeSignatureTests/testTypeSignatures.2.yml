@@ -1,0 +1,10 @@
+fileName: <in-memory>
+module: Mock
+types:
+- generics:
+    parameters:
+    - name: A
+  kind: class
+  module: Mock
+  name: GenericClass
+  scope: Mock

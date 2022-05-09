@@ -2,6 +2,15 @@
 
 public struct Variable: Equatable, Codable {
 
+    public let name: String
+    public let type: TypeSignature?
+    @DefaultEmpty public var attributes: [String] = []
+    @DefaultEmpty public var modifiers: [Modifier] = []
+    public var defaultValue: String? = nil
+    public var isStored: Bool = true
+    public var sourceRange: SourceRange? = nil
+
+    
     public enum Modifier: String, Codable, ModifierProtocol {
         case `public`
         case `private`
@@ -17,13 +26,4 @@ public struct Variable: Equatable, Codable {
 
         case `mutating`
     }
-
-    public let name: String
-    public let type: TypeSignature?
-    public var attributes: [String] = []
-    public var modifiers: [Modifier] = []
-    public var defaultValue: String? = nil
-    public var isStored: Bool = true
-    public var sourceRange: SourceRange? = nil
-
 }

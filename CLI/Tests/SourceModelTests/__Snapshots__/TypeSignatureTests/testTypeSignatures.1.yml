@@ -1,0 +1,7 @@
+fileName: <in-memory>
+module: Mock
+types:
+- kind: class
+  module: Mock
+  name: Class
+  scope: Mock

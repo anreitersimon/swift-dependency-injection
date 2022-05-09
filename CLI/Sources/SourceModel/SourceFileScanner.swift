@@ -237,8 +237,8 @@ class SourceFileScanner: SyntaxVisitor {
     override func visit(_ node: TypealiasDeclSyntax) -> SyntaxVisitorContinueKind {
         currentScope.typealiases.append(
             TypeAlias(
-                modifiers: .fromModifiers(node.modifiers),
                 identifier: node.identifier.trimmed,
+                modifiers: .fromModifiers(node.modifiers),
                 type: node.initializer.map { .fromTypeSyntax($0.value) },
                 sourceRange: node.sourceRange(context: context)
             )

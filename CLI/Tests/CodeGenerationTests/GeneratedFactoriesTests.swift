@@ -73,8 +73,6 @@ class GeneratedFactoriesTests: XCTestCase {
         )
 
         let text = CodeGen.generateSources(fileGraph: graph)
-        
-        isRecording = true
 
         assertSnapshot(matching: text, as: .lines)
         assertSnapshot(matching: graph, as: .yaml)

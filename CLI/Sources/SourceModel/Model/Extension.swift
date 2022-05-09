@@ -1,16 +1,16 @@
 public struct Extension: Equatable, Codable, DeclarationScope {
     public let extendedType: String
-
-    public var initializers: [Initializer] = []
-    public var variables: [Variable] = []
-    public var functions: [Function] = []
-    public var types: [TypeDeclaration] = []
-    public var typealiases: [TypeAlias] = []
-
+    
     public let scope: String
-    public let modifiers: [Modifier]
-    public var generics: Generics = .empty
-    public var inheritedTypes: [TypeSignature] = []
+
+    @DefaultEmpty public var initializers: [Initializer] = []
+    @DefaultEmpty public var variables: [Variable] = []
+    @DefaultEmpty public var functions: [Function] = []
+    @DefaultEmpty public var types: [TypeDeclaration] = []
+    @DefaultEmpty public var typealiases: [TypeAlias] = []
+    @DefaultEmpty public var modifiers: [Modifier]
+    @DefaultEmpty public var generics: Generics = .empty
+    @DefaultEmpty public var inheritedTypes: [TypeSignature] = []
     public let sourceRange: SourceRange?
 
     public enum Modifier: String, Codable, ModifierProtocol {

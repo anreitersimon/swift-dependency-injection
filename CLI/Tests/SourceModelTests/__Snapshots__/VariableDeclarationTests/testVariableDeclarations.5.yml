@@ -1,20 +1,11 @@
-extensions: []
 fileName: <in-memory>
-functions: []
-imports: []
-initializers: []
 module: Mock
-typealiases: []
-types: []
 variables:
-- attributes: []
-  isStored: true
-  modifiers: []
+- isStored: true
   name: variable_ExplicitOptional
   type:
     simple:
       genericArguments:
       - simple:
-          genericArguments: []
           name: Int
       name: Optional

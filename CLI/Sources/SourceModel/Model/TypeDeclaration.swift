@@ -5,15 +5,24 @@ public struct TypeDeclaration: Codable, Equatable, DeclarationScope {
     public let module: String
     public let name: String
     public let scope: String
-    public let modifiers: [Modifier]
-    public var generics: Generics = .empty
-    public var inheritedTypes: [TypeSignature] = []
-    public var typealiases: [TypeAlias] = []
 
+    @DefaultEmpty
+    public var modifiers: [Modifier]
+    @DefaultEmpty
+    public var generics: Generics = .empty
+    @DefaultEmpty
+    public var inheritedTypes: [TypeSignature] = []
+    @DefaultEmpty
+    public var typealiases: [TypeAlias] = []
+    @DefaultEmpty
     public var initializers: [Initializer] = []
+    @DefaultEmpty
     public var variables: [Variable] = []
+    @DefaultEmpty
     public var functions: [Function] = []
+    @DefaultEmpty
     public var types: [TypeDeclaration] = []
+
     public let sourceRange: SourceRange?
 
     public var allAvailableInitializers: [Initializer] {
@@ -70,9 +79,13 @@ public struct TypeDeclaration: Codable, Equatable, DeclarationScope {
     public var accessLevel: AccessLevel { modifiers.accessLevel }
 }
 
-public struct Generics: Equatable, Codable {
-    public let parameters: [Parameter]
-    public let requirements: [Requirement]
+public struct Generics: Equatable, Codable, CanBeEmpty {
+    public static func createEmpty() -> Generics {
+        return .empty
+    }
+    
+    @DefaultEmpty public var parameters: [Parameter]
+    @DefaultEmpty public var requirements: [Requirement]
     public let parametersRange: SourceRange?
     public let requirementsRange: SourceRange?
 

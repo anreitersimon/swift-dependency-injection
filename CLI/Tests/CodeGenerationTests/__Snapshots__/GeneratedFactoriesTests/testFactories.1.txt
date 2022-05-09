@@ -121,7 +121,7 @@ extension Mock.ImplicitInitializer {
 
 
 // Container Extensions
-extension DependencyContainer where Scope: Provides_GlobalScope {
+extension DependencyContainer where Scope: Provides_CustomScope {
     internal func explicitelyInitialized() -> ExplicitelyInitialized {
         resolve()
     }

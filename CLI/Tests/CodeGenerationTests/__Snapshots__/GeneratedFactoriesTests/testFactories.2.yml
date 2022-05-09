@@ -6,36 +6,28 @@ bindings:
       firstName: a
       type:
         simple:
-          genericArguments: []
           name: ImplicitInitializer
     generics:
-      parameters: []
       requirements:
       - isSameType: true
         left:
           simple:
-            genericArguments: []
             name: Scope
         right:
           simple:
-            genericArguments: []
             name: CustomScope
     modifiers:
     - static
     name: bind
     returnType:
       simple:
-        genericArguments: []
         name: Protocol
-    trailingModifiers: []
   kind: Injectable
   scope:
     simple:
-      genericArguments: []
       name: CustomScope
   type:
     simple:
-      genericArguments: []
       name: Protocol
 - accessLevel: internal
   factoryMethod:
@@ -44,33 +36,23 @@ bindings:
       firstName: a
       type:
         simple:
-          genericArguments: []
           name: ImplicitInitializer
-    generics:
-      parameters: []
-      requirements: []
     modifiers:
     - static
     name: bind
     returnType:
       simple:
-        genericArguments: []
         name: Protocol
-    trailingModifiers: []
   kind: Injectable
   scope:
     simple:
-      genericArguments: []
       name: GlobalScope
   type:
     simple:
-      genericArguments: []
       name: Protocol
 fileName: MockFile
 imports:
-- attributes: []
-  modifers: []
-  path: TestModule
+- path: TestModule
 module: Mock
 provides:
 - accessLevel: internal
@@ -82,40 +64,25 @@ provides:
       firstName: a
       type:
         simple:
-          genericArguments: []
           name: I
     - attributes: []
       defaultValue: '1'
       firstName: bla
       type:
         simple:
-          genericArguments: []
           name: Int
-    generics:
-      parameters: []
-      requirements: []
-    modifiers: []
-    trailingModifiers: []
   kind: Injectable
   name: ExplicitelyInitialized
   scope:
     simple:
-      genericArguments: []
-      name: GlobalScope
+      name: CustomScope
 - accessLevel: internal
   fullName: Mock.ExplicitelyInitialized.Nested
-  initializer:
-    arguments: []
-    generics:
-      parameters: []
-      requirements: []
-    modifiers: []
-    trailingModifiers: []
+  initializer: {}
   kind: Injectable
   name: Nested
   scope:
     simple:
-      genericArguments: []
       name: GlobalScope
 - accessLevel: internal
   fullName: Mock.ImplicitInitializer
@@ -126,38 +93,28 @@ provides:
       firstName: a
       type:
         simple:
-          genericArguments: []
           name: I
     - attributes:
       - '@Assisted'
       firstName: b
       type:
         simple:
-          genericArguments: []
           name: Int
     - attributes: []
       defaultValue: '1'
       firstName: bla
       type:
         simple:
-          genericArguments: []
           name: Int
-    generics:
-      parameters: []
-      requirements: []
-    modifiers: []
-    trailingModifiers: []
   kind: Injectable
   name: ImplicitInitializer
   scope:
     simple:
-      genericArguments: []
       name: GlobalScope
 scopes:
 - name: CustomScope
   parent:
     simple:
-      genericArguments: []
       name: GlobalScope
 uses:
 - arguments:
@@ -165,14 +122,12 @@ uses:
     firstName: a
     type:
       simple:
-        genericArguments: []
         name: ImplicitInitializer
 - arguments:
   - attributes: []
     firstName: a
     type:
       simple:
-        genericArguments: []
         name: ImplicitInitializer
 - arguments:
   - attributes:
@@ -180,14 +135,12 @@ uses:
     firstName: a
     type:
       simple:
-        genericArguments: []
         name: I
   - attributes: []
     defaultValue: '1'
     firstName: bla
     type:
       simple:
-        genericArguments: []
         name: Int
 - arguments: []
 - arguments:
@@ -196,19 +149,16 @@ uses:
     firstName: a
     type:
       simple:
-        genericArguments: []
         name: I
   - attributes:
     - '@Assisted'
     firstName: b
     type:
       simple:
-        genericArguments: []
         name: Int
   - attributes: []
     defaultValue: '1'
     firstName: bla
     type:
       simple:
-        genericArguments: []
         name: Int

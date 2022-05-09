@@ -1,0 +1,18 @@
+fileName: <in-memory>
+module: Mock
+types:
+- generics:
+    parameters:
+    - name: A
+    requirements:
+    - isSameType: false
+      left:
+        simple:
+          name: A
+      right:
+        simple:
+          name: Protocol
+  kind: class
+  module: Mock
+  name: GenericClass
+  scope: Mock

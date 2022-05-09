@@ -1,10 +1,8 @@
 - optional:
-    _0:
+    baseType:
       simple:
-        genericArguments: []
         name: Int
 - optional:
-    _0:
+    baseType:
       simple:
-        genericArguments: []
         name: Int

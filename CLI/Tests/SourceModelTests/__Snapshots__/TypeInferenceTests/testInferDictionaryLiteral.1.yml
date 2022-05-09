@@ -1,18 +1,14 @@
 - dictionary:
     key:
       simple:
-        genericArguments: []
         name: Int
     value:
       simple:
-        genericArguments: []
         name: String
 - dictionary:
     key:
       simple:
-        genericArguments: []
         name: Int
     value:
       simple:
-        genericArguments: []
         name: String

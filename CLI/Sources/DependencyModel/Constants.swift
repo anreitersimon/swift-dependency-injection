@@ -41,10 +41,10 @@ public enum InjectableProtocol: String, CaseIterable, Codable {
     )
 
     public static func from(type: TypeSignature) -> InjectableProtocol? {
-        guard case .simple(let name, _) = type else {
+        guard case .simple(let simple) = type else {
             return nil
         }
 
-        return mappings[name]
+        return mappings[simple.name]
     }
 }

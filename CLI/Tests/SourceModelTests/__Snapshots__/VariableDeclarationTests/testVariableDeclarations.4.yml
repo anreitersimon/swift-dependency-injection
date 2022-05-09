@@ -1,19 +1,10 @@
-extensions: []
 fileName: <in-memory>
-functions: []
-imports: []
-initializers: []
 module: Mock
-typealiases: []
-types: []
 variables:
-- attributes: []
-  isStored: true
-  modifiers: []
+- isStored: true
   name: variable_ImplicitlyUnwrappedOptional
   type:
     implicitlyUnwrappedOptional:
-      _0:
+      baseType:
         simple:
-          genericArguments: []
           name: Int

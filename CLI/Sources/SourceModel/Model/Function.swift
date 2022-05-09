@@ -1,31 +1,11 @@
 public struct Function: Equatable, Codable {
 
-    public enum Modifier: String, Codable, ModifierProtocol {
-        case `public`
-        case `private`
-        case `fileprivate`
-        case `internal`
-        case `open`
-
-        case `static`
-        case `class`
-
-        case `weak`
-        case `unowned`
-
-        case `mutating`
-    }
-
-    public enum TrailingModifier: String, Codable, ModifierProtocol {
-        case `throws`, `rethrows`, `async`
-    }
-
     public var accessLevel: AccessLevel { modifiers.accessLevel }
     public let name: String
-    public var arguments: [Argument] = []
-    public var modifiers: [Modifier]
-    public var generics: Generics = .empty
-    public let trailingModifiers: [TrailingModifier]
+    @DefaultEmpty public var arguments: [Argument] = []
+    @DefaultEmpty public var modifiers: [Modifier]
+    @DefaultEmpty public var generics: Generics = .empty
+    @DefaultEmpty public var trailingModifiers: [TrailingModifier]
     public let returnType: TypeSignature?
     public var sourceRange: SourceRange? = nil
 
@@ -80,4 +60,25 @@ public struct Function: Equatable, Codable {
             }
         }
     }
+
+    public enum Modifier: String, Codable, ModifierProtocol {
+        case `public`
+        case `private`
+        case `fileprivate`
+        case `internal`
+        case `open`
+
+        case `static`
+        case `class`
+
+        case `weak`
+        case `unowned`
+
+        case `mutating`
+    }
+
+    public enum TrailingModifier: String, Codable, ModifierProtocol {
+        case `throws`, `rethrows`, `async`
+    }
+
 }

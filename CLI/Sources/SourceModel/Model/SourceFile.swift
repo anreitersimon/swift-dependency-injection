@@ -28,13 +28,13 @@ public struct SourceFile: Equatable, Codable, DeclarationScope {
 
     public let fileName: String
     public let module: String
-    public var imports: [Import] = []
-    public var types: [TypeDeclaration] = []
-    public var typealiases: [TypeAlias] = []
-    public var extensions: [Extension] = []
-    public var variables: [Variable] = []
-    public var functions: [Function] = []
-    public var initializers: [Initializer] = []
+    @DefaultEmpty public var imports: [Import] = []
+    @DefaultEmpty public var types: [TypeDeclaration] = []
+    @DefaultEmpty public var typealiases: [TypeAlias] = []
+    @DefaultEmpty public var extensions: [Extension] = []
+    @DefaultEmpty public var variables: [Variable] = []
+    @DefaultEmpty public var functions: [Function] = []
+    @DefaultEmpty public var initializers: [Initializer] = []
 
     public var recursiveTypes: [TypeDeclaration] {
         var builder: [TypeDeclaration] = []
