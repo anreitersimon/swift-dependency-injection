@@ -6,6 +6,11 @@ extension Never: DependencyScope {
     static let scopeID = ScopeID(Never.self)
 }
 
+extension ScopeID {
+    static let never = ScopeID(Never.self)
+    static let global = ScopeID(GlobalScope.self)
+}
+
 public protocol Provides_GlobalScope {}
 public protocol Provides_ApplicationScope: Provides_GlobalScope {}
 

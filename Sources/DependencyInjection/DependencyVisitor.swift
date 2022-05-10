@@ -4,116 +4,159 @@ struct ResolvedGraph {
     }
 
     let graph: DependencyGraph
-    private var resolved: [TypeID: ResolveResult] = [:]
+    private var resolved: [DependencyGraph.Coordinate: ResolveResult] = [:]
 
-    subscript(_ type: TypeID) -> ResolveResult? {
+    subscript(_ type: DependencyGraph.Coordinate) -> ResolveResult? {
         get { resolved[type] }
         set { resolved[type] = newValue }
     }
 }
 
-typealias ResolveResult = Result<Void, DependencyErrors>
+typealias ResolveResult = Result<DependencyGraph.Coordinate, DependencyErrors>
 
 class DependencyVisitor {
+    typealias Coordinate = DependencyGraph.Coordinate
 
     init(graph: DependencyGraph) {
         self.resolved = ResolvedGraph(graph: graph)
     }
 
+    var graph: DependencyGraph { resolved.graph }
     var resolved: ResolvedGraph
-    var path: [PathComponent] = []
+    var path: [Coordinate] = []
+    var actualPath: [Coordinate] = []
 
     func run() throws {
-
-//        for key in resolved.graph.keys {
-//            _ = runVisit(PathComponent(name: "<root>", type: key))
-//        }
+        runVisit(ScopeID.global)
     }
 
-    func visit(_ type: TypeID) {
+    func runVisit(_ scope: ScopeID) {
+        guard let scopeGraph = graph.scopeToGraph[scope] else {
+            return
+        }
+
+        visit(scope)
+
+        let childScopes = graph.scopeToGraph.values.filter { $0.parent?.id == scope }
+
+        for key in scopeGraph.keys {
+            runVisit(Coordinate(scope: scope, type: key))
+        }
+
+        for childScope in childScopes {
+            runVisit(childScope.id)
+        }
+
+        postVisit(scope)
 
     }
 
-    func postVisit(_ type: TypeID, result: ResolveResult) {
+    func visit(_ scope: ScopeID) {
 
     }
 
+    func postVisit(_ scope: ScopeID) {
+
+    }
+
+    func visit(_ coordinate: DependencyGraph.Coordinate) {
+
+    }
+
+    func postVisit(_ coordinate: DependencyGraph.Coordinate, result: ResolveResult) {
+
+    }
+
+    @discardableResult
     func runVisit(
-        _ pathComponent: PathComponent
+        _ coordinate: DependencyGraph.Coordinate
     ) -> ResolveResult {
-
         let result: ResolveResult
 
-        visit(pathComponent.type)
+        visit(coordinate)
 
-        if let cached = resolved[pathComponent.type] {
+        if let cached = resolved[coordinate] {
             // Already resolved
             return cached
         }
 
         defer {
-            postVisit(pathComponent.type, result: result)
+            postVisit(coordinate, result: result)
         }
 
-        if path.contains(where: { $0.type == pathComponent.type }) {
+        if path.contains(coordinate) {
             result = .failure(
                 .cycle(
-                    type: pathComponent.type,
+                    type: coordinate.type,
                     path: path.map(\.type)
                 )
             )
         } else {
 
-            path.append(pathComponent)
+            path.append(coordinate)
+
+            let popActual: Bool
+            if graph[coordinate] != nil {
+                actualPath.append(coordinate)
+                popActual = true
+            } else {
+                popActual = false
+            }
+
             defer {
                 path.removeLast()
+                if popActual {
+                    actualPath.removeLast()
+                }
             }
-            
-            fatalError()
-//
-//            if let provider = resolved.graph[pathComponent.type] {
-//                if let error = provider.checkIsResolvable() {
-//                    result = .failure(error)
-//                } else {
-//                    var errors: [String: DependencyErrors] = [:]
-//                    for requirement in provider.requirements {
-//                        errors[requirement.key] =
-//                            runVisit(
-//                                PathComponent(name: requirement.key, type: requirement.value)
-//                            ).error
-//                    }
-//                    result = errors.isEmpty ? .success(()) : .failure(.nested(errors))
-//                }
-//            } else {
-//                result = .failure(.noProvider(type: pathComponent.type))
-//            }
 
+            if let scopeGraph = graph.scopeToGraph[coordinate.scope] {
+
+                if let (effectiveScope, provider) = scopeGraph.findProvider(for: coordinate.type) {
+                    if let error = provider.checkIsResolvable() {
+                        result = .failure(error)
+                    } else {
+                        var errors: [String: DependencyErrors] = [:]
+                        for requirement in provider.requirements {
+                            errors[requirement.key] =
+                                runVisit(
+                                    Coordinate(scope: effectiveScope.id, type: requirement.value)
+                                ).error
+                        }
+                        result =
+                            errors.isEmpty
+                            ? .success(Coordinate(scope: effectiveScope.id, type: coordinate.type))
+                            : .failure(.nested(errors))
+                    }
+                } else {
+                    result = .failure(.noProvider(type: coordinate.type))
+                }
+            } else {
+                result = .failure(.scopeNotFound(coordinate.scope))
+            }
         }
 
-        resolved[pathComponent.type] = result
+        resolved[coordinate] = result
 
         return result
     }
 
-    struct PathComponent: CustomStringConvertible, CustomDebugStringConvertible {
-        let name: String
-        let type: TypeID
-
-        var description: String {
-            if name == "<root>" {
-                return "\(type.description)"
-            } else {
-                return "\(name): \(type.description)"
+}
+extension DependencyGraph.ScopeGraph {
+    func findProvider(for type: TypeID) -> (DependencyGraph.ScopeGraph, DependencyDeclaration)? {
+        sequence(first: self, next: { $0.parent }).lazy
+            .compactMap { sg in
+                guard let p = sg[type] else { return nil }
+                return (sg, p)
             }
-        }
-
-        var debugDescription: String {
-            return description
-        }
+            .first
     }
 }
 
 struct DotGraph: CustomStringConvertible {
+    let label: String?
+    let isTopLevel: Bool
+
     struct Node: Equatable, CustomStringConvertible {
         typealias ID = String
         let attributes: [String: String]
@@ -137,69 +180,111 @@ struct DotGraph: CustomStringConvertible {
         let to: Node.ID
     }
 
+    var declaration: String = "digraph G"
+    var subgraphs: [DotGraph] = []
     var nodes: [Node.ID: Node] = [:]
     var edges: [Edge] = []
 
     var description: String {
-        var builder = "digraph G {\n"
+        var builder = "\(declaration) {\n"
 
-        builder.append("# Nodes\n")
+        if let label = label {
+            builder.append("label=\"\(label)\"")
+        }
 
         for (key, node) in nodes {
             builder.append("  \(key)\(node);\n")
         }
 
-        builder.append("# Edges \n")
+        for (index, subgraph) in subgraphs.enumerated() {
+            var s = subgraph
+            s.declaration = "subgraph cluster_\(index)"
 
-        for edge in edges {
-            builder.append("  \(edge.from) -> \(edge.to);\n")
+            builder.append("\n")
+            builder.append(s.description)
+            builder.append("\n")
         }
 
+        if isTopLevel {
+            for edge in recursiveEdges {
+                builder.append("  \(edge.from) -> \(edge.to);\n")
+            }
+        }
         builder.append("}")
 
         return builder
+    }
+    
+    var recursiveEdges: [Edge] {
+        self.edges + subgraphs.flatMap(\.recursiveEdges)
     }
 }
 
 class DotGraphPrinter: DependencyVisitor {
 
-    var dotGraph = DotGraph()
+    var graphs: [DotGraph] = [DotGraph(label: nil, isTopLevel: true)]
+    var sourceNode: Coordinate? { actualPath.last }
+    var referencedNodes: Set<DependencyGraph.Coordinate> = []
 
-    var sourceNode: TypeID? { path.last?.type }
-
-    var referencedNodes: Set<TypeID> = []
-    
-    override func run() throws {
-        try super.run()
-        
-//        let unreferenced = Set(self.resolved.graph.keys).subtracting(referencedNodes)
-//        
-//        for node in unreferenced {
-//            dotGraph.edges.append(
-//                DotGraph.Edge(from: "root", to: node.description)
-//            )
-//        }
+    var currentGraph: DotGraph {
+        get { graphs[graphs.count - 1] }
+        set { graphs[graphs.count - 1] = newValue }
     }
 
-    override func visit(_ type: TypeID) {
-        if let sourceNode = sourceNode {
-            referencedNodes.insert(type)
-            dotGraph.edges.append(
-                DotGraph.Edge(from: sourceNode.description, to: type.description)
-            )
+    override func run() throws {
+        try super.run()
+
+        //        let unreferenced = Set(self.resolved.graph.keys).subtracting(referencedNodes)
+        //
+        //        for node in unreferenced {
+        //            dotGraph.edges.append(
+        //                DotGraph.Edge(from: "root", to: node.description)
+        //            )
+        //        }
+    }
+
+    override func visit(_ scope: ScopeID) {
+        
+        graphs.append(DotGraph(label: scope.description, isTopLevel: false))
+    }
+
+    override func postVisit(_ scope: ScopeID) {
+        
+        let graph = graphs.removeLast()
+
+        currentGraph.subgraphs.append(graph)
+    }
+
+    override func visit(_ coordinate: DependencyGraph.Coordinate) {
+        
+        if let sourceNode = sourceNode, graph[coordinate] != nil {
+            currentGraph.edges.append(DotGraph.Edge(from: sourceNode.id, to: coordinate.id))
         }
     }
 
     override func postVisit(
-        _ type: TypeID,
+        _ coordinate: DependencyGraph.Coordinate,
         result: ResolveResult
     ) {
-        let id = type.description
-        dotGraph.nodes[id] = DotGraph.Node(
-            attributes: [
-                "color": result.isSuccess ? "green" : "red"
-            ]
-        )
+        
+
+        switch result {
+        case .success(let resolved):
+            if graph[coordinate] != nil {
+                currentGraph.nodes[coordinate.id] = DotGraph.Node(
+                    attributes: [
+                        "color": "green"
+                    ]
+                )
+            }
+        case .failure:
+            currentGraph.nodes[coordinate.id] = DotGraph.Node(
+                attributes: [
+                    "color": "red"
+                ]
+            )
+        }
+
     }
 
 }
@@ -209,6 +294,13 @@ extension Result {
         switch self {
         case .success: return nil
         case .failure(let error): return error
+        }
+    }
+
+    var success: Success? {
+        switch self {
+        case .success(let value): return value
+        case .failure: return nil
         }
     }
 

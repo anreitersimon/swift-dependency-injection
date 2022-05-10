@@ -1,6 +1,22 @@
 class DependencyGraph {
 
-    fileprivate var scopeToGraph: [ScopeID: ScopeGraph] = [:]
+    subscript(coordinate: Coordinate) -> DependencyDeclaration? {
+        return self.scopeToGraph[coordinate.scope]?[coordinate.type]
+    }
+
+    struct Coordinate: Hashable {
+        let scope: ScopeID
+        let type: TypeID
+
+        var id: String {
+            return "\(scope.description).\(type.description)".replacingOccurrences(
+                of: ".",
+                with: "_"
+            )
+        }
+    }
+
+    var scopeToGraph: [ScopeID: ScopeGraph] = [:]
 
     func providers<Scope: DependencyScope>(for scope: Scope.Type) -> [TypeID: _AnyProvider] {
         return self.scopeToGraph[ScopeID(scope)]?.declarations.mapValues {
@@ -10,10 +26,12 @@ class DependencyGraph {
 
     class ScopeGraph {
 
-        init(parent: ScopeGraph?) {
+        init(id: ScopeID, parent: ScopeGraph?) {
+            self.id = id
             self.parent = parent
         }
 
+        let id: ScopeID
         let parent: ScopeGraph?
         private(set) var keys: [TypeID] = []
         fileprivate var declarations: [TypeID: DependencyDeclaration] = [:]
@@ -55,7 +73,7 @@ class DependencyGraph {
             parent = registerScope(Scope.ParentScope.self)
         }
 
-        let graph = ScopeGraph(parent: parent)
+        let graph = ScopeGraph(id: id, parent: parent)
 
         scopeToGraph[id] = graph
 
@@ -82,8 +100,8 @@ class DefaultRegistry: DependencyRegistry {
             registerModule(subModule)
         }
     }
-    
-    func registerScope<Scope>(_ type: Scope.Type) where Scope : DependencyScope {
+
+    func registerScope<Scope>(_ type: Scope.Type) where Scope: DependencyScope {
         self.graph.registerScope(type)
     }
 
@@ -97,14 +115,14 @@ class DefaultRegistry: DependencyRegistry {
         let dotPrinter = DotGraphPrinter(graph: graph)
         try dotPrinter.run()
 
-        print(dotPrinter.dotGraph)
+        print(dotPrinter.currentGraph)
 
         container = DependencyContainer(
             graph: self.graph,
             scope: GlobalScope(),
             parent: nil
         )
-        
+
         print(graph.scopeToGraph)
         //try validator.run()
     }

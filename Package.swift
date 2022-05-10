@@ -24,9 +24,7 @@ let package = Package(
         .target(
             name: "DependencyInjection",
             dependencies: [],
-            swiftSettings: [
-                .define("swift_dependency_injection_exclude")
-            ]
+            swiftSettings: []
         ),
         .target(
             name: "Example",

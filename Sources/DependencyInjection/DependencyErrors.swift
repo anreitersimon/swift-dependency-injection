@@ -18,6 +18,7 @@ enum DependencyErrors: Error, CustomDebugStringConvertible, CustomStringConverti
     case noProvider(type: TypeID)
     case resolvingAssistedInject(type: TypeID)
     case cycle(type: TypeID, path: [TypeID])
+    case scopeNotFound(ScopeID)
     case nested([String: DependencyErrors])
 
     var description: String {
@@ -30,6 +31,8 @@ enum DependencyErrors: Error, CustomDebugStringConvertible, CustomStringConverti
             return "Types using @Assisted annotation cannot be directly Injected \(type)"
         case .cycle(let type, let path):
             return "Cycle \(type) Path: \(path.map(\.description).joined(separator: " -> "))"
+        case .scopeNotFound(let scope):
+            return "Scope Not Found: \(scope)"
         case .nested:
             return ""
         }

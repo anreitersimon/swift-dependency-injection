@@ -28,7 +28,6 @@ struct TypeID:
     }
 }
 
-
 struct ScopeID:
     Hashable,
     CustomStringConvertible,
@@ -51,10 +50,13 @@ struct ScopeID:
     }
 
     var description: String {
-        return String(describing: self.type)
+        var str = ""
+        debugPrint(self.type, terminator: "", to: &str)
+
+        return str
     }
 
     var debugDescription: String {
-        return String(describing: self.type)
+        return self.description
     }
 }
