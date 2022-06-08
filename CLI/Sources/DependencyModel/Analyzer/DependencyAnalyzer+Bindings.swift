@@ -27,8 +27,15 @@ extension DependencyGraphCollector {
                 diagnostics.record(.conflictingScopeDefinitions(function))
             }
 
-            if function.name != "bind" {
+            let accessLevel: AccessLevel?
+
+            switch function.name {
+            case "bind": accessLevel = nil
+            case "bindInternal": accessLevel = .internal
+            case "bindPublic": accessLevel = .public
+            default:
                 diagnostics.record(.bindingFunctionMisnamed(function))
+                return
             }
 
             for arg in function.arguments where arg.isAssisted {
@@ -48,6 +55,7 @@ extension DependencyGraphCollector {
             graph.registerBinding(
                 type: returnType,
                 kind: extendedFactoryType,
+                accessLevel: accessLevel,
                 factoryMethod: function,
                 scope: scopeFromFunction
                     ?? scopeFromExtension
@@ -77,7 +85,7 @@ extension Diagnostic {
 
     static func bindingFunctionMisnamed(_ function: Function) -> Diagnostic {
         Diagnostic(
-            message: "Binding methods must be named 'bind'",
+            message: "Binding methods must be named 'bind' 'bindInternal' or 'bindPublic'",
             level: .error,
             location: function.sourceRange?.start
         )
@@ -99,7 +107,7 @@ extension Generics {
         if requirements.isEmpty {
             return nil
         }
-        
+
         guard let requirement = requirements.first,
             requirements.count == 1,
             requirement.isSameType,

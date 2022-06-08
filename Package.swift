@@ -23,8 +23,7 @@ let package = Package(
     targets: [
         .target(
             name: "DependencyInjection",
-            dependencies: [],
-            swiftSettings: []
+            dependencies: []
         ),
         .target(
             name: "Example",

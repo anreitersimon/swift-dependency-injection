@@ -1,6 +1,7 @@
 public protocol DependencyScope {
     associatedtype ParentScope: DependencyScope
 }
+
 extension Never: DependencyScope {
     public typealias ParentScope = Never
     static let scopeID = ScopeID(Never.self)

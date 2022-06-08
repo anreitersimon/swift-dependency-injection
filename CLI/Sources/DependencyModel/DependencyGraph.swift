@@ -35,12 +35,13 @@ public struct FileDependencyGraph: Codable {
     public mutating func registerBinding(
         type: TypeSignature,
         kind: InjectableProtocol,
+        accessLevel: AccessLevel?,
         factoryMethod: Function,
         scope: TypeSignature
     ) {
         self.bindings.append(
             Binding(
-                accessLevel: factoryMethod.accessLevel,
+                accessLevel: accessLevel,
                 kind: kind,
                 type: type,
                 factoryMethod: factoryMethod,
@@ -97,11 +98,19 @@ public struct ProvidedType: Codable {
 }
 
 public struct Binding: Codable {
-    public let accessLevel: AccessLevel
+    public let accessLevel: AccessLevel?
     public let kind: InjectableProtocol
     public let type: TypeSignature
     public let factoryMethod: Function
     public let scope: TypeSignature
+    
+    public var methodName: String {
+        switch accessLevel {
+        case .internal: return "bindInternal"
+        case .public: return "bindPublic"
+        default: return "bind"
+        }
+    }
 }
 
 public struct ScopeDefinition: Codable {

@@ -22,23 +22,17 @@ class ViewModel: Injectable {
 
 }
 
-protocol AProtocol2 {}
+public protocol AProtocol {}
 
-struct AProtocolImplementation: Singleton, AProtocol, AProtocol2 {}
-
-extension AProtocol {
-    static func bind(impl: AProtocolImplementation) -> AProtocol {
-        impl
-    }
-}
+struct AProtocolImplementation: Singleton, ExampleCore.AProtocol, AProtocol {}
 
 extension Dependencies.Factories where Scope == ExampleScope {
 
-    static func bind(impl: AProtocolImplementation) -> AProtocol {
+    static func bindPublic(impl: AProtocolImplementation) -> AProtocol {
         impl
     }
 
-    static func bind(impl: AProtocolImplementation) -> AProtocol2 {
+    static func bindPublic(impl: AProtocolImplementation) -> ExampleCore.AProtocol {
         impl
     }
 }

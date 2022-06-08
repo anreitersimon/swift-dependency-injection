@@ -10,9 +10,14 @@ struct MainApp {
         try Dependencies.sharedRegistry.setup(
             ExampleApp_Module.self
         )
-        
-        Dependencies.sharedResolver
+
+        let container = Dependencies.sharedResolver
             .childContainer(scope: ExampleScope())
+        
+        
+        if let a = container as? Provides_GlobalScope {
+            let aa = container.coreRepository()
+        }
 
         //        let customContainer = Dependencies.sharedResolver.childContainer(scope: CustomScope())
 

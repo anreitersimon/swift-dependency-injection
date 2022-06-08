@@ -214,7 +214,7 @@ struct DotGraph: CustomStringConvertible {
 
         return builder
     }
-    
+
     var recursiveEdges: [Edge] {
         self.edges + subgraphs.flatMap(\.recursiveEdges)
     }
@@ -244,19 +244,19 @@ class DotGraphPrinter: DependencyVisitor {
     }
 
     override func visit(_ scope: ScopeID) {
-        
+
         graphs.append(DotGraph(label: scope.description, isTopLevel: false))
     }
 
     override func postVisit(_ scope: ScopeID) {
-        
+
         let graph = graphs.removeLast()
 
         currentGraph.subgraphs.append(graph)
     }
 
     override func visit(_ coordinate: DependencyGraph.Coordinate) {
-        
+
         if let sourceNode = sourceNode, graph[coordinate] != nil {
             currentGraph.edges.append(DotGraph.Edge(from: sourceNode.id, to: coordinate.id))
         }
@@ -266,7 +266,6 @@ class DotGraphPrinter: DependencyVisitor {
         _ coordinate: DependencyGraph.Coordinate,
         result: ResolveResult
     ) {
-        
 
         switch result {
         case .success(let resolved):

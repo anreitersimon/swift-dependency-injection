@@ -175,7 +175,7 @@ public enum CodeGen {
         for binding in graph.bindings {
             generateContainerFactoryMethod(
                 in: writer,
-                accessLevel: binding.accessLevel,
+                accessLevel: binding.accessLevel ?? .internal,
                 typeName: binding.type.description,
                 scope: binding.scope.description,
                 arguments: []
@@ -225,11 +225,11 @@ public enum CodeGen {
                     ofType: \(typeName ?? "Never.self"),
                     in: \(binding.scope.asMetatype() ?? "Never.self"),
                     requirements: requirements
-                ) { resolver in
+                ) { resolver -> \(binding.type.description) in
                 """
             )
             $0.indent {
-                $0.write("\(extendedScope).bind")
+                $0.write("\(extendedScope).\(binding.methodName)")
                 $0.writeCallArguments(binding.factoryMethod.arguments) { _ in
                     "resolver.resolve()"
                 }
