@@ -13,9 +13,6 @@ struct MainApp {
 
         let container = Dependencies.sharedResolver
             .childContainer(scope: ExampleScope())
-        
-
-        container.exampleCoreAProtocol()
 
         //        let customContainer = Dependencies.sharedResolver.childContainer(scope: CustomScope())
 
@@ -34,6 +31,17 @@ struct CustomParentScope: DependencyScope {
 
 struct CustomScope: DependencyScope {
     typealias ParentScope = CustomParentScope
+}
+
+extension Dependencies.Factories where Scope == CustomParentScope {
+
+    static func bind(
+        injected: CoreRepository,
+        a: A
+    ) -> ViewModel2 {
+        ViewModel2(injected: injected, a: a)
+    }
+
 }
 
 class ViewModel2: Injectable {

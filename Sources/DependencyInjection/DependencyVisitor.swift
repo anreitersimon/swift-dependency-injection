@@ -21,10 +21,10 @@ class DependencyVisitor {
         self.resolved = ResolvedGraph(graph: graph)
     }
 
+    var currentScope: ScopeID = .global
     var graph: DependencyGraph { resolved.graph }
     var resolved: ResolvedGraph
     var path: [Coordinate] = []
-    var actualPath: [Coordinate] = []
 
     func run() throws {
         runVisit(ScopeID.global)
@@ -34,13 +34,17 @@ class DependencyVisitor {
         guard let scopeGraph = graph.scopeToGraph[scope] else {
             return
         }
+        let oldScope = currentScope
+
+        currentScope = scope
+        defer { currentScope = oldScope }
 
         visit(scope)
 
         let childScopes = graph.scopeToGraph.values.filter { $0.parent?.id == scope }
 
         for key in scopeGraph.keys {
-            runVisit(Coordinate(scope: scope, type: key))
+            runVisit(Coordinate(scope: scope, type: key), source: nil)
         }
 
         for childScope in childScopes {
@@ -63,25 +67,31 @@ class DependencyVisitor {
 
     }
 
-    func postVisit(_ coordinate: DependencyGraph.Coordinate, result: ResolveResult) {
+    func postVisit(
+        _ coordinate: DependencyGraph.Coordinate,
+        source: DependencyGraph.Coordinate?,
+        result: ResolveResult
+    ) {
 
     }
 
     @discardableResult
     func runVisit(
-        _ coordinate: DependencyGraph.Coordinate
+        _ coordinate: DependencyGraph.Coordinate,
+        source: DependencyGraph.Coordinate?
     ) -> ResolveResult {
         let result: ResolveResult
 
         visit(coordinate)
 
         if let cached = resolved[coordinate] {
+            postVisit(coordinate, source: source, result: cached)
             // Already resolved
             return cached
         }
 
         defer {
-            postVisit(coordinate, result: result)
+            postVisit(coordinate, source: source, result: result)
         }
 
         if path.contains(coordinate) {
@@ -95,19 +105,8 @@ class DependencyVisitor {
 
             path.append(coordinate)
 
-            let popActual: Bool
-            if graph[coordinate] != nil {
-                actualPath.append(coordinate)
-                popActual = true
-            } else {
-                popActual = false
-            }
-
             defer {
                 path.removeLast()
-                if popActual {
-                    actualPath.removeLast()
-                }
             }
 
             if let scopeGraph = graph.scopeToGraph[coordinate.scope] {
@@ -117,10 +116,12 @@ class DependencyVisitor {
                         result = .failure(error)
                     } else {
                         var errors: [String: DependencyErrors] = [:]
+                        let source = Coordinate(scope: effectiveScope.id, type: coordinate.type)
                         for requirement in provider.requirements {
                             errors[requirement.key] =
                                 runVisit(
-                                    Coordinate(scope: effectiveScope.id, type: requirement.value)
+                                    Coordinate(scope: effectiveScope.id, type: requirement.value),
+                                    source: source
                                 ).error
                         }
                         result =
@@ -189,7 +190,7 @@ struct DotGraph: CustomStringConvertible {
         var builder = "\(declaration) {\n"
 
         if let label = label {
-            builder.append("label=\"\(label)\"")
+            builder.append("label=\"\(label)\"\n")
         }
 
         for (key, node) in nodes {
@@ -223,7 +224,7 @@ struct DotGraph: CustomStringConvertible {
 class DotGraphPrinter: DependencyVisitor {
 
     var graphs: [DotGraph] = [DotGraph(label: nil, isTopLevel: true)]
-    var sourceNode: Coordinate? { actualPath.last }
+    var edges: [DotGraph.Edge] = []
     var referencedNodes: Set<DependencyGraph.Coordinate> = []
 
     var currentGraph: DotGraph {
@@ -233,6 +234,8 @@ class DotGraphPrinter: DependencyVisitor {
 
     override func run() throws {
         try super.run()
+        
+        self.currentGraph.edges = self.edges
 
         //        let unreferenced = Set(self.resolved.graph.keys).subtracting(referencedNodes)
         //
@@ -244,7 +247,6 @@ class DotGraphPrinter: DependencyVisitor {
     }
 
     override func visit(_ scope: ScopeID) {
-
         graphs.append(DotGraph(label: scope.description, isTopLevel: false))
     }
 
@@ -257,32 +259,53 @@ class DotGraphPrinter: DependencyVisitor {
 
     override func visit(_ coordinate: DependencyGraph.Coordinate) {
 
-        if let sourceNode = sourceNode, graph[coordinate] != nil {
-            currentGraph.edges.append(DotGraph.Edge(from: sourceNode.id, to: coordinate.id))
-        }
     }
 
     override func postVisit(
         _ coordinate: DependencyGraph.Coordinate,
+        source: DependencyGraph.Coordinate?,
         result: ResolveResult
     ) {
 
+        //        if let sourceNode = source {
+        //            currentGraph.edges.append(DotGraph.Edge(from: sourceNode.id, to: coordinate.id))
+        //        }
+
         switch result {
         case .success(let resolved):
-            if graph[coordinate] != nil {
-                currentGraph.nodes[coordinate.id] = DotGraph.Node(
+            if resolved.scope == currentScope {
+                currentGraph.nodes[resolved.id] = DotGraph.Node(
                     attributes: [
+                        "label": resolved.type.description,
                         "color": "green"
                     ]
                 )
             }
+            if let sourceNode = source {
+                edges.appendIfNotPresent(
+                    DotGraph.Edge(from: sourceNode.id, to: resolved.id)
+                )
+            }
+
         case .failure:
-            currentGraph.nodes[coordinate.id] = DotGraph.Node(
-                attributes: [
-                    "color": "red"
-                ]
-            )
+
+            if graph[coordinate] != nil {
+                if currentScope == coordinate.scope {
+                    currentGraph.nodes[coordinate.id] = DotGraph.Node(
+                        attributes: [
+                            "label": coordinate.type.description,
+                            "color": "red"
+                        ]
+                    )
+                }
+                if let sourceNode = source {
+                    edges.appendIfNotPresent(
+                        DotGraph.Edge(from: sourceNode.id, to: coordinate.id)
+                    )
+                }
+            }
         }
+        super.postVisit(coordinate, source: source, result: result)
 
     }
 
@@ -307,6 +330,15 @@ extension Result {
         switch self {
         case .success: return true
         case .failure: return false
+        }
+    }
+}
+
+
+extension Array where Element: Equatable {
+    mutating func appendIfNotPresent(_ element: Element) {
+        if !self.contains(element) {
+            self.append(element)
         }
     }
 }
