@@ -32,7 +32,7 @@ extension Mock_Module {
             ofType: Protocol.self,
             in: CustomScope.self,
             requirements: requirements
-        ) { resolver in
+        ) { resolver -> Protocol in
             Dependencies.Factories.bind(
                 a: resolver.resolve()
             )
@@ -47,7 +47,7 @@ extension Mock_Module {
             ofType: Protocol.self,
             in: GlobalScope.self,
             requirements: requirements
-        ) { resolver in
+        ) { resolver -> Protocol in
             Dependencies.Factories.bind(
                 a: resolver.resolve()
             )

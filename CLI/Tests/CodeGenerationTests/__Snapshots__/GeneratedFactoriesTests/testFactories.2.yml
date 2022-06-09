@@ -1,6 +1,5 @@
 bindings:
-- accessLevel: internal
-  factoryMethod:
+- factoryMethod:
     arguments:
     - attributes: []
       firstName: a
@@ -29,8 +28,7 @@ bindings:
   type:
     simple:
       name: Protocol
-- accessLevel: internal
-  factoryMethod:
+- factoryMethod:
     arguments:
     - attributes: []
       firstName: a
