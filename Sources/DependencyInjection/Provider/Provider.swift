@@ -2,15 +2,6 @@ protocol _AnyProvider {
     func resolveAny(provider: DependencyResolver) throws -> Any
 }
 
-protocol DependencyDeclaration {
-    var typeName: ProviderType { get }
-    var requirements: [String: TypeID] { get }
-
-    func checkIsResolvable() -> DependencyErrors?
-
-    func makeProvider() -> _AnyProvider
-}
-
 enum ProviderType: Int, Comparable, CustomStringConvertible {
     case singleton, weakSingleton, factory, assistedFactory
 
