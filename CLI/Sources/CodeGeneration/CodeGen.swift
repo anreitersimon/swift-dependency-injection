@@ -199,19 +199,21 @@ public enum CodeGen {
             )
 
             let methodName: String
-            let extendedScope: String
+            let extendedKind: String
 
             switch binding.kind {
             case .factory:
                 methodName = "registerFactory"
-                extendedScope = "Dependencies.Factories"
+                extendedKind = "Dependencies.Factories"
             case .singleton:
                 methodName = "registerSingleton"
-                extendedScope = "Dependencies.Singletons"
+                extendedKind = "Dependencies.Singletons"
             case .weakSingleton:
                 methodName = "registerWeakSingleton"
-                extendedScope = "Dependencies.WeakSingletons"
+                extendedKind = "Dependencies.WeakSingletons"
             }
+            
+            let extendedScope = "\(extendedKind)<\(binding.scope.description)>"
 
             let typeName = binding.type.asMetatype()
 
