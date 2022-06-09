@@ -5,6 +5,10 @@ struct ResolvedGraph {
 
     let graph: DependencyGraph
     private var resolved: [DependencyGraph.Coordinate: ResolveResult] = [:]
+    
+    var errors: [DependencyErrors] {
+        self.resolved.values.compactMap { $0.error }
+    }
 
     subscript(_ type: DependencyGraph.Coordinate) -> ResolveResult? {
         get { resolved[type] }

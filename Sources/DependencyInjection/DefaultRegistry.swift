@@ -30,6 +30,14 @@ class DefaultRegistry: DependencyRegistry {
 
         let dotPrinter = DotGraphPrinter(graph: graph)
         try dotPrinter.run()
+        
+        let errors = dotPrinter.resolved.errors
+        for error in errors {
+            print(error)
+        }
+        if !errors.isEmpty {
+            fatalError()
+        }
 
         print(dotPrinter.currentGraph)
 
