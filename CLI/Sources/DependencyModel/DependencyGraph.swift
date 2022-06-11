@@ -25,7 +25,8 @@ public struct FileDependencyGraph: Codable {
                 kind: kind,
                 name: type.name,
                 fullName: type.fullyQualifiedName,
-                initializer: initializer
+                initializer: initializer,
+                qualifiers: type.qualifiers
             )
         )
 
@@ -36,6 +37,7 @@ public struct FileDependencyGraph: Codable {
         type: TypeSignature,
         kind: InjectableProtocol,
         accessLevel: AccessLevel?,
+        qualifiers: Qualifiers,
         factoryMethod: Function,
         scope: TypeSignature
     ) {
@@ -45,7 +47,8 @@ public struct FileDependencyGraph: Codable {
                 kind: kind,
                 type: type,
                 factoryMethod: factoryMethod,
-                scope: scope
+                scope: scope,
+                qualifiers: qualifiers
             )
         )
 
@@ -86,6 +89,26 @@ public struct ModuleDependencyGraph: Codable {
 
 }
 
+extension String {
+
+    /// Returns a form of the string that is a valid bundle identifier
+    public func swiftIdentifier() -> String {
+        return String(self.map {
+            if $0.isNumber || $0.isLetter {
+                return $0
+            } else {
+                return "_"
+            }
+        })
+    }
+
+    public var lowerFirst: String {
+        guard let firstCharacter = self.first else { return self }
+
+        return firstCharacter.lowercased() + self.dropFirst()
+    }
+}
+
 public struct TopLevelDependencyGraph: Codable {}
 
 public struct ProvidedType: Codable {
@@ -95,6 +118,26 @@ public struct ProvidedType: Codable {
     public let name: String
     public let fullName: String
     public let initializer: Initializer
+    public let qualifiers: Qualifiers
+
+    public var id: String {
+        [self.fullName, self.scope.description, self.qualifiers.custom]
+            .compactMap { $0 }
+            .joined(separator: ".")
+    }
+
+    public var registrationFunctionName: String {
+        return "register_Type_\(id)".swiftIdentifier()
+    }
+
+    public var factoryFunctionName: String {
+        if let qualifier = qualifiers.custom {
+            return "\(name)_\(qualifier)".swiftIdentifier().lowerFirst
+        } else {
+            return "\(name)".swiftIdentifier().lowerFirst
+        }
+    }
+
 }
 
 public struct Binding: Codable {
@@ -103,13 +146,23 @@ public struct Binding: Codable {
     public let type: TypeSignature
     public let factoryMethod: Function
     public let scope: TypeSignature
-    
-    public var methodName: String {
-        switch accessLevel {
-        case .internal: return "bindInternal"
-        case .public: return "bindPublic"
-        default: return "bind"
-        }
+    public let qualifiers: Qualifiers
+
+    public var id: String {
+        [
+            self.type.description,
+            self.factoryMethod.name,
+            self.scope.description,
+            self.qualifiers.custom,
+        ].compactMap { $0 }.joined(separator: ".")
+    }
+
+    public var registrationFunctionName: String {
+        return "register_Binding_\(id)".swiftIdentifier()
+    }
+
+    public var factoryFunctionName: String {
+        return "\(factoryMethod.name)".swiftIdentifier().lowerFirst
     }
 }
 
@@ -124,8 +177,4 @@ public struct Injection: Codable {
     public init(arguments: [Function.Argument]) {
         self.arguments = arguments
     }
-}
-
-extension TypeDeclaration {
-
 }

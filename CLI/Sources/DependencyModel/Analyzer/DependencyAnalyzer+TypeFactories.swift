@@ -39,6 +39,7 @@ extension DependencyGraphCollector {
         else {
             return
         }
+
         let assisted = initializer.arguments.filter(\.isAssisted)
         if !assisted.isEmpty, conformanceKind != .factory {
             for assistedArgument in assisted {
@@ -50,7 +51,8 @@ extension DependencyGraphCollector {
 
             return
         }
-
+        
+    
         graph.registerInjectableType(
             type,
             kind: conformanceKind,

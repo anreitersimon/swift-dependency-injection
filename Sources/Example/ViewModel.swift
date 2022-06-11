@@ -22,17 +22,49 @@ class ViewModel: Injectable {
 
 }
 
-public protocol AProtocol {}
+public protocol AProtocol: AnyObject {}
 
-struct AProtocolImplementation: Singleton, ExampleCore.AProtocol, AProtocol {}
+class AProtocolImplementation: Singleton, ExampleCore.AProtocol, AProtocol {
+    init() {}
+}
 
-extension Dependencies.Factories where Scope == ExampleScope {
+extension Dependencies.Bindings {
 
-    static func bindPublic(impl: AProtocolImplementation) -> AProtocol {
+    @Qualifiers.Public.MyQualifier
+    static func aProtocolMyQualifer(impl: AProtocolImplementation) -> AProtocol {
         impl
     }
 
-    static func bindPublic(impl: AProtocolImplementation) -> ExampleCore.AProtocol {
+    @Qualifiers.Public
+    static func aProtocol(impl: AProtocolImplementation) -> AProtocol {
         impl
     }
+
+    static func exampleAProtocol(impl: AProtocolImplementation) -> ExampleCore.AProtocol {
+        impl
+    }
+}
+
+public struct MyScope: DependencyScope {
+    public typealias ParentScope = GlobalScope
+}
+
+extension Qualifiers {
+    @resultBuilder public enum MyQualifier: QualifierDefinition {}
+    @resultBuilder public enum YourQualifier: QualifierDefinition {}
+}
+
+extension Qualifiers.Public {
+    public typealias MyQualifier = Qualifiers.MyQualifier
+    public typealias YourQualifier = Qualifiers.YourQualifier
+}
+
+extension Qualifiers.Singleton {
+    public typealias MyQualifier = Qualifiers.MyQualifier
+    public typealias YourQualifier = Qualifiers.YourQualifier
+}
+
+extension Qualifiers.WeakSingleton {
+    public typealias MyQualifier = Qualifiers.MyQualifier
+    public typealias YourQualifier = Qualifiers.YourQualifier
 }

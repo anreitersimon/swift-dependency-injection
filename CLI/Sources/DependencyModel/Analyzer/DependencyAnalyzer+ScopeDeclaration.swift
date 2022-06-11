@@ -35,4 +35,10 @@ extension TypeDeclaration {
     public var scope: TypeSignature? {
         typealiases.first(where: { $0.identifier == "Scope" })?.type
     }
+    
+    public var qualifiers: Qualifiers {
+        let name = typealiases.first(where: { $0.identifier == "Qualifier" })?.type?.description
+        
+        return Qualifiers(raw: name ?? "")
+    }
 }

@@ -1,8 +1,8 @@
 bindings:
-- factoryMethod:
+- accessLevel: internal
+  factoryMethod:
     arguments:
-    - attributes: []
-      firstName: a
+    - firstName: a
       type:
         simple:
           name: ImplicitInitializer
@@ -22,19 +22,22 @@ bindings:
       simple:
         name: Protocol
   kind: Injectable
+  qualifiers: {}
   scope:
     simple:
       name: CustomScope
   type:
     simple:
       name: Protocol
-- factoryMethod:
+- accessLevel: internal
+  factoryMethod:
     arguments:
-    - attributes: []
-      firstName: a
+    - firstName: a
       type:
         simple:
           name: ImplicitInitializer
+    attributes:
+    - name: Qualifiers.MyQualifier
     modifiers:
     - static
     name: bind
@@ -42,6 +45,8 @@ bindings:
       simple:
         name: Protocol
   kind: Injectable
+  qualifiers:
+    custom: MyQualifier
   scope:
     simple:
       name: GlobalScope
@@ -58,19 +63,19 @@ provides:
   initializer:
     arguments:
     - attributes:
-      - '@Inject'
+      - name: Inject
       firstName: a
       type:
         simple:
           name: I
-    - attributes: []
-      defaultValue: '1'
+    - defaultValue: '1'
       firstName: bla
       type:
         simple:
           name: Int
   kind: Injectable
   name: ExplicitelyInitialized
+  qualifiers: {}
   scope:
     simple:
       name: CustomScope
@@ -79,6 +84,7 @@ provides:
   initializer: {}
   kind: Injectable
   name: Nested
+  qualifiers: {}
   scope:
     simple:
       name: GlobalScope
@@ -87,25 +93,27 @@ provides:
   initializer:
     arguments:
     - attributes:
-      - '@Inject'
+      - arguments:
+        - argument: Qualifiers.MyQualifier.self
+        name: Inject
       firstName: a
       type:
         simple:
           name: I
     - attributes:
-      - '@Assisted'
+      - name: Assisted
       firstName: b
       type:
         simple:
           name: Int
-    - attributes: []
-      defaultValue: '1'
+    - defaultValue: '1'
       firstName: bla
       type:
         simple:
           name: Int
   kind: Injectable
   name: ImplicitInitializer
+  qualifiers: {}
   scope:
     simple:
       name: GlobalScope
@@ -116,26 +124,23 @@ scopes:
       name: GlobalScope
 uses:
 - arguments:
-  - attributes: []
-    firstName: a
+  - firstName: a
     type:
       simple:
         name: ImplicitInitializer
 - arguments:
-  - attributes: []
-    firstName: a
+  - firstName: a
     type:
       simple:
         name: ImplicitInitializer
 - arguments:
   - attributes:
-    - '@Inject'
+    - name: Inject
     firstName: a
     type:
       simple:
         name: I
-  - attributes: []
-    defaultValue: '1'
+  - defaultValue: '1'
     firstName: bla
     type:
       simple:
@@ -143,19 +148,20 @@ uses:
 - arguments: []
 - arguments:
   - attributes:
-    - '@Inject'
+    - arguments:
+      - argument: Qualifiers.MyQualifier.self
+      name: Inject
     firstName: a
     type:
       simple:
         name: I
   - attributes:
-    - '@Assisted'
+    - name: Assisted
     firstName: b
     type:
       simple:
         name: Int
-  - attributes: []
-    defaultValue: '1'
+  - defaultValue: '1'
     firstName: bla
     type:
       simple:

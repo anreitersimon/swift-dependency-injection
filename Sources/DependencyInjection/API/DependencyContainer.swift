@@ -29,11 +29,11 @@ public class DependencyContainer<Scope: DependencyScope> {
 
 extension DependencyContainer: DependencyResolver {
 
-    public func resolve<Value>(_ type: Value.Type) -> Value {
-        if let provider = self.providers[TypeID(type)] {
+    public func resolve<Value>(_ type: Value.Type, qualifier: QualifierDefinition.Type) -> Value {
+        if let provider = self.providers[TypeID(type, qualifier: qualifier)] {
             return try! provider.resolveAny(provider: self) as! Value
         } else {
-            return parent!.resolve(type)
+            return parent!.resolve(type, qualifier: qualifier)
         }
     }
 }

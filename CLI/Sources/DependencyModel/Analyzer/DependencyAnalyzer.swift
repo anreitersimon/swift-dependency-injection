@@ -17,22 +17,21 @@ extension String {
             return self
         }
     }
+
+    func removingSuffux(_ str: String) -> String {
+        if self.hasSuffix(str) {
+            return String(self.dropLast(str.count))
+        } else {
+            return self
+        }
+    }
 }
 
 extension Extension {
-    var extendedFactoryType: InjectableProtocol? {
+    var isDependencyBindingsExtension: Bool {
         let sanitized = self.extendedType.removingPrefix("\(Constants.runtimeLibraryName).")
 
-        switch sanitized {
-        case "Dependencies.Factories":
-            return .factory
-        case "Dependencies.Singletons":
-            return .singleton
-        case "Dependencies.WeakSingletons":
-            return .weakSingleton
-        default:
-            return nil
-        }
+        return sanitized == "Dependencies.Bindings"
     }
 }
 
@@ -92,64 +91,166 @@ extension TypeDeclaration {
     }
 }
 
-extension Function.Argument {
+enum ArgumentInjectionKind: Equatable {
+    case injected(qualifier: String?)
+    case assisted
+    case none
+    case inValid
 
+    var preventsInjection: Bool {
+        return self == .inValid
+    }
+}
+
+public enum BuiltinQualifier: String, Codable {
+    case Public
+    case Singleton
+    case WeakSingleton
+}
+
+public struct Qualifiers: Codable, Equatable {
+    @DefaultEmpty public var builtIn: [BuiltinQualifier]
+    public let custom: String?
+
+    public var qualifierSuffix: String {
+        custom.map { "_\($0)" } ?? ""
+    }
+
+    public var effectiveQalifier: String {
+        "Qualifiers.\(custom ?? "Default").self"
+    }
+
+    init(raw: String) {
+        var components = raw.split(separator: ".")[...]
+        guard
+            components.first == "Qualifiers"
+                || components.first == "\(Constants.runtimeLibraryName).Qualifiers"
+        else {
+            self.builtIn = []
+            self.custom = nil
+            return
+        }
+
+        components = components.dropFirst()
+
+        if components.last == "self" {
+            components = components.dropLast()
+        }
+        if components.last == "Default" {
+            components = components.dropLast()
+        }
+
+        self.builtIn = components.compactMap {
+            BuiltinQualifier(rawValue: String($0))
+        }
+        self.custom =
+            components
+            .drop(while: { BuiltinQualifier(rawValue: String($0)) != nil })
+            .first?.description
+
+    }
+}
+
+extension Attribute {
+    var isInjectedOrAssisted: Bool {
+        return isInjected || isAssisted
+    }
+
+    var isInjected: Bool {
+        return Constants.injectAnnotations.contains(name)
+    }
+
+    var isAssisted: Bool {
+        return Constants.assistedAnnotations.contains(name)
+    }
+
+    var injectionKind: ArgumentInjectionKind? {
+        if self.isAssisted {
+            return .assisted
+        } else if self.isInjected {
+            return .injected(qualifier: self.arguments.first?.name)
+        } else {
+            return nil
+        }
+    }
+
+}
+
+extension Function.Argument {
     public var isInjected: Bool {
-        !Constants.injectAnnotations.intersection(attributes).isEmpty
+        attributes.contains(where: \.isInjected)
     }
 
     public var isAssisted: Bool {
-        !Constants.assistedAnnotations.intersection(attributes).isEmpty
+        attributes.contains(where: \.isAssisted)
     }
 
-    func isInjectable(diagnostics: Diagnostics) -> Bool {
-        var isValid = true
+    public var isInjectedOrAssisted: Bool {
+        attributes.contains(where: \.isInjectedOrAssisted)
+    }
+
+    public var qualifiers: Qualifiers {
+        Qualifiers(raw: self.attributes.first?.name ?? "")
+    }
+
+    func extractInjectionKind(diagnostics: Diagnostics?) -> ArgumentInjectionKind {
         let name = firstName ?? secondName ?? ""
 
-        let injectableAnnotations = Constants.injectAnnotations.intersection(attributes)
-
-        let assistedAnnotations = Constants.assistedAnnotations.intersection(attributes)
+        let relevantAttributes = attributes.filter { $0.isInjectedOrAssisted }
+        let injectableAnnotations = relevantAttributes.filter { $0.isInjected }
+        let assistedAnnotations = relevantAttributes.filter { $0.isAssisted }
 
         if injectableAnnotations.count > 1 {
-            diagnostics.warn("Too many Inject Annotation for \(name)")
+            diagnostics?.warn("Too many Inject Annotation for \(name)")
+            return .inValid
         }
         if assistedAnnotations.count > 1 {
-            diagnostics.warn(
+            diagnostics?.warn(
                 "Too many Assisted Annotation for \(name)",
                 at: self.sourceRange?.start
             )
+            return .inValid
         }
 
         if !injectableAnnotations.isEmpty && !assistedAnnotations.isEmpty {
-            isValid = false
 
-            diagnostics.error(
+            diagnostics?.error(
                 "Cannot combine Inject and Assisted",
                 at: self.sourceRange?.start
             )
+            return .inValid
         }
 
         if injectableAnnotations.isEmpty
             && assistedAnnotations.isEmpty
             && defaultValue == nil
         {
-            diagnostics.error(
+            diagnostics?.error(
                 "argument \(name) must either be annotated with Inject or Assisted or provide a defaultValue",
                 at: self.sourceRange?.start
             )
+            return .inValid
         }
 
-        return isValid
+        return relevantAttributes.first?.injectionKind ?? .none
     }
 
 }
 
+extension Function {
+    var qualifiers: Qualifiers {
+        Qualifiers(raw: attributes.first?.name ?? "")
+    }
+}
+
 extension SourceModel.Initializer {
-    func isInjectable(diagnostics: Diagnostics) -> Bool {
+
+    func isInjectable(diagnostics: Diagnostics?) -> Bool {
         var isValid = true
 
         for arg in self.arguments {
-            isValid = isValid && arg.isInjectable(diagnostics: diagnostics)
+            let kind = arg.extractInjectionKind(diagnostics: diagnostics)
+            isValid = isValid && !kind.preventsInjection
         }
 
         return isValid
@@ -194,7 +295,7 @@ public struct DependencyGraphCollector {
         for ext in file.extensions {
             collectBindingExtensions(ext)
         }
-        
+
         for type in file.recursiveTypes {
             collectScopeDeclaration(type)
         }

@@ -2,7 +2,7 @@
 public struct Assisted<V> {
     public let wrappedValue: V
 
-    public init(wrappedValue: V, _ name: StaticString? = nil) {
+    public init(wrappedValue: V) {
         self.wrappedValue = wrappedValue
     }
 }
@@ -11,7 +11,7 @@ public struct Assisted<V> {
 public struct Inject<V> {
     public let wrappedValue: V
 
-    public init(wrappedValue: V, _ name: StaticString? = nil) {
+    public init(wrappedValue: V, _ qualifier: QualifierDefinition.Type? = nil) {
         self.wrappedValue = wrappedValue
     }
 }

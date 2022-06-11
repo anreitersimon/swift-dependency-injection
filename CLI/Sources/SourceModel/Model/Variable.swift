@@ -4,7 +4,7 @@ public struct Variable: Equatable, Codable {
 
     public let name: String
     public let type: TypeSignature?
-    @DefaultEmpty public var attributes: [String] = []
+    @DefaultEmpty public var attributes: [Attribute] = []
     @DefaultEmpty public var modifiers: [Modifier] = []
     public var defaultValue: String? = nil
     public var isStored: Bool = true

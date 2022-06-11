@@ -4,6 +4,7 @@ public struct Function: Equatable, Codable {
     public let name: String
     @DefaultEmpty public var arguments: [Argument] = []
     @DefaultEmpty public var modifiers: [Modifier]
+    @DefaultEmpty public var attributes: [Attribute] = []
     @DefaultEmpty public var generics: Generics = .empty
     @DefaultEmpty public var trailingModifiers: [TrailingModifier]
     public let returnType: TypeSignature?
@@ -14,7 +15,7 @@ public struct Function: Equatable, Codable {
             firstName: String? = nil,
             secondName: String? = nil,
             type: TypeSignature? = nil,
-            attributes: [String] = [],
+            attributes: [Attribute] = [],
             defaultValue: String? = nil,
             sourceRange: SourceRange? = nil
         ) {
@@ -29,7 +30,7 @@ public struct Function: Equatable, Codable {
         public var firstName: String?
         public var secondName: String?
         public var type: TypeSignature?
-        public var attributes: [String] = []
+        @DefaultEmpty public var attributes: [Attribute] = []
         public var defaultValue: String? = nil
         public var sourceRange: SourceRange? = nil
 

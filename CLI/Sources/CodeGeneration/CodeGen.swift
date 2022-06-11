@@ -2,32 +2,6 @@ import DependencyModel
 import Foundation
 import SourceModel
 
-extension String {
-
-    /// Returns a form of the string that is a valid bundle identifier
-    public func swiftIdentifier() -> String {
-        return self.filter { $0.isNumber || $0.isLetter }
-    }
-
-    public var lowerFirst: String {
-        guard let firstCharacter = self.first else { return self }
-
-        return firstCharacter.lowercased() + self.dropFirst()
-    }
-}
-
-// TODO: Dont duplicate
-extension Function.Argument {
-
-    public var isInjected: Bool {
-        !Constants.injectAnnotations.intersection(attributes).isEmpty
-    }
-
-    public var isAssisted: Bool {
-        !Constants.assistedAnnotations.intersection(attributes).isEmpty
-    }
-}
-
 extension Initializer {
     public var isAssisted: Bool {
         return arguments.contains(where: \.isAssisted)
@@ -110,7 +84,7 @@ public enum CodeGen {
                 }
 
                 $0.endLine()
-                $0.writeLine("// Types")
+                $0.writeLine("// Injectable Types")
 
                 for provided in graph.provides
                 where !provided.initializer.arguments.contains(where: \.isAssisted) {
@@ -122,7 +96,7 @@ public enum CodeGen {
 
                 for binding in graph.bindings {
                     $0.writeLine(
-                        "register_Binding_\(binding.type.description.swiftIdentifier())(in: registry)"
+                        "\(binding.registrationFunctionName)(in: registry)"
                     )
                 }
             }
@@ -138,7 +112,7 @@ public enum CodeGen {
             )
         }
 
-        writer.writeLine("// User defined Binding extensions")
+        writer.writeLine("// MARK: - User defined Binding extensions -")
         writer.endLine()
 
         writer.scope("extension \(graph.module)_Module") {
@@ -147,7 +121,7 @@ public enum CodeGen {
             }
         }
 
-        writer.writeLine("// Provided Types")
+        writer.writeLine("// MARK: - Provided Types -")
         writer.endLine()
 
         for provided in graph.provides {
@@ -159,6 +133,8 @@ public enum CodeGen {
 
         writer.endLine()
 
+        writer.writeLine("// MARK: - Bindings -")
+
         writer.endLine()
         writer.writeLine("// Container Extensions")
 
@@ -166,18 +142,23 @@ public enum CodeGen {
             generateContainerFactoryMethod(
                 in: writer,
                 accessLevel: provided.accessLevel,
+                methodName: provided.factoryFunctionName,
                 typeName: provided.name,
                 scope: provided.scope.description,
+                qualifiers: provided.qualifiers,
                 arguments: provided.initializer.arguments
             )
         }
+        writer.endLine()
 
         for binding in graph.bindings {
             generateContainerFactoryMethod(
                 in: writer,
                 accessLevel: binding.accessLevel ?? .internal,
+                methodName: binding.factoryFunctionName,
                 typeName: binding.type.description,
                 scope: binding.scope.description,
+                qualifiers: binding.qualifiers,
                 arguments: []
             )
         }
@@ -191,7 +172,7 @@ public enum CodeGen {
     ) {
 
         writer.scope(
-            "fileprivate static func register_Binding_\(binding.type.description.swiftIdentifier())(in registry: DependencyRegistry)"
+            "fileprivate static func \(binding.registrationFunctionName)(in registry: DependencyRegistry)"
         ) {
             generateRequirementsVariable(
                 in: $0,
@@ -199,21 +180,16 @@ public enum CodeGen {
             )
 
             let methodName: String
-            let extendedKind: String
+            let extendedScope = "Dependencies.Bindings<\(binding.scope.description)>"
 
             switch binding.kind {
             case .factory:
                 methodName = "registerFactory"
-                extendedKind = "Dependencies.Factories"
             case .singleton:
                 methodName = "registerSingleton"
-                extendedKind = "Dependencies.Singletons"
             case .weakSingleton:
                 methodName = "registerWeakSingleton"
-                extendedKind = "Dependencies.WeakSingletons"
             }
-            
-            let extendedScope = "\(extendedKind)<\(binding.scope.description)>"
 
             let typeName = binding.type.asMetatype()
 
@@ -226,14 +202,15 @@ public enum CodeGen {
                 registry.\(methodName)(
                     ofType: \(typeName ?? "Never.self"),
                     in: \(binding.scope.asMetatype() ?? "Never.self"),
+                    qualifier: \(binding.qualifiers.effectiveQalifier),
                     requirements: requirements
                 ) { resolver -> \(binding.type.description) in
                 """
             )
             $0.indent {
-                $0.write("\(extendedScope).\(binding.methodName)")
-                $0.writeCallArguments(binding.factoryMethod.arguments) { _ in
-                    "resolver.resolve()"
+                $0.write("\(extendedScope).\(binding.factoryMethod.name)")
+                $0.writeCallArguments(binding.factoryMethod.arguments) { arg in
+                    "resolver.resolve(qualifier: \(arg.qualifiers.effectiveQalifier))"
                 }
                 $0.endLine()
             }
@@ -280,6 +257,7 @@ public enum CodeGen {
                     registry.\(methodName)(
                         ofType: \(injectable.fullName).self,
                         in: \(injectable.fullName).Scope.self,
+                        qualifier: \(injectable.fullName).Qualifier.self,
                         requirements: requirements
                     ) { resolver in
                         \(injectable.fullName).newInstance(resolver: resolver)
@@ -294,8 +272,10 @@ public enum CodeGen {
     private static func generateContainerFactoryMethod(
         in writer: FileWriter,
         accessLevel: AccessLevel,
+        methodName: String,
         typeName: String,
         scope: String,
+        qualifiers: Qualifiers,
         arguments: [Function.Argument]
     ) {
         let allArguments = arguments.filter { $0.isAssisted || $0.isInjected }
@@ -306,14 +286,14 @@ public enum CodeGen {
         writer.scope("extension DependencyContainer where Scope: Provides_\(scope)") {
 
             $0.write(
-                "\(accessLevel.rawValue) func \(typeName.swiftIdentifier().lowerFirst)"
+                "\(accessLevel.rawValue) func \(methodName)"
             )
-            
+
             $0.writeDeclarationArguments(assisted)
 
             $0.scope(" -> \(typeName)") {
                 if assisted.isEmpty {
-                    $0.writeLine("resolve()")
+                    $0.writeLine("resolve(qualifier: \(qualifiers.effectiveQalifier))")
                 } else {
                     $0.write("\(typeName).newInstance")
                     $0.writeCallArguments(actualArguments) {
@@ -335,7 +315,7 @@ public enum CodeGen {
 
         writer.writeLine("fileprivate static func newInstance(")
         writer.indent {
-            $0.write("resolver: DependencyResolver = Dependencies.sharedResolver")
+            $0.write("resolver: DependencyResolver")
 
             for argument in assisted {
                 $0.write(",")
@@ -347,7 +327,8 @@ public enum CodeGen {
         writer.scope(") -> \(injectable.fullName)") {
             $0.write("\(injectable.fullName)")
             $0.writeCallArguments(allArguments.filter { $0.isInjected || $0.isAssisted }) {
-                $0.isInjected ? "resolver.resolve()" : nil
+                $0.isInjected
+                    ? "resolver.resolve(qualifier: \($0.qualifiers.effectiveQalifier))" : nil
             }
         }
 
@@ -357,7 +338,7 @@ public enum CodeGen {
         in writer: FileWriter,
         arguments: [Function.Argument]
     ) {
-        writer.write("let requirements: [String: Any.Type] = [")
+        writer.write("let requirements: [String: TypeID] = [")
 
         guard !arguments.isEmpty else {
             writer.write(":]")
@@ -370,7 +351,10 @@ public enum CodeGen {
         writer.indent {
             for field in arguments {
                 if let metaType = field.type?.asMetatype() {
-                    $0.writeLine("\"\(field.firstName ?? field.secondName ?? "-")\": \(metaType),")
+                    let qualifier = field.qualifiers.effectiveQalifier
+                    $0.writeLine(
+                        "\"\(field.firstName ?? field.secondName ?? "-")\": TypeID(\(metaType), qualifier: \(qualifier)),"
+                    )
                 }
             }
         }
@@ -404,7 +388,7 @@ extension FileWriter {
                     }
                 }
                 $0.write(": \(argument.type?.description ?? "")")
-                
+
                 if let defaultValue = argument.defaultValue {
                     $0.write(" = \(defaultValue)")
                 }
@@ -461,4 +445,15 @@ extension FileWriter {
         self.write(")")
     }
 
+}
+
+extension String {
+
+    func removingSuffix(_ suffix: String) -> String {
+        if hasSuffix(suffix) {
+            return String(dropLast(suffix.count))
+        } else {
+            return self
+        }
+    }
 }

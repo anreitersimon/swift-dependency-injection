@@ -3,20 +3,20 @@ struct ScopeID:
     CustomStringConvertible,
     CustomDebugStringConvertible
 {
-    let id: ObjectIdentifier
+    let typeID: ObjectIdentifier
     let type: Any.Type
 
     init<T: DependencyScope>(_ type: T.Type) {
-        self.id = ObjectIdentifier(type)
+        self.typeID = ObjectIdentifier(type)
         self.type = type
     }
 
     public static func == (lhs: ScopeID, rhs: ScopeID) -> Bool {
-        return lhs.id == rhs.id
+        return lhs.typeID == rhs.typeID
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
+        hasher.combine(typeID)
     }
 
     var description: String {

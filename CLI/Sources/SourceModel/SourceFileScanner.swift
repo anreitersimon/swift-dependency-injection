@@ -69,9 +69,7 @@ class SourceFileScanner: SyntaxVisitor {
                     firstName: parameter.firstName?.text,
                     secondName: parameter.secondName?.text,
                     type: parameter.type.map(TypeSignature.fromTypeSyntax),
-                    attributes: parameter.attributes?.map {
-                        $0.trimmed
-                    } ?? [],
+                    attributes: Attribute.fromSyntax(parameter.attributes, context: context),
                     defaultValue: parameter.defaultArgument?.value.trimmed,
                     sourceRange: parameter.sourceRange(context: context)
                 )
@@ -267,9 +265,7 @@ class SourceFileScanner: SyntaxVisitor {
             Variable(
                 name: name,
                 type: variableType,
-                attributes: node.attributes?.map {
-                    $0.trimmed
-                } ?? [],
+                attributes: Attribute.fromSyntax(node.attributes, context: context),
                 modifiers: .fromModifiers(node.modifiers),
                 defaultValue: binding.initializer?.value.trimmed,
                 isStored: isStored,
@@ -280,10 +276,10 @@ class SourceFileScanner: SyntaxVisitor {
     }
 
     override func visit(_ node: FunctionDeclSyntax) -> SyntaxVisitorContinueKind {
-
         var function = Function(
             name: node.identifier.trimmed,
             modifiers: .fromModifiers(node.modifiers),
+            attributes: Attribute.fromSyntax(node.attributes, context: context),
             generics: Generics.from(
                 parameterClause: node.genericParameterClause,
                 whereClause: node.genericWhereClause,
@@ -300,9 +296,7 @@ class SourceFileScanner: SyntaxVisitor {
                     firstName: parameter.firstName?.text,
                     secondName: parameter.secondName?.text,
                     type: parameter.type.map(TypeSignature.fromTypeSyntax),
-                    attributes: parameter.attributes?.map {
-                        $0.trimmed
-                    } ?? [],
+                    attributes: Attribute.fromSyntax(parameter.attributes, context: context),
                     defaultValue: parameter.defaultArgument?.value.trimmed,
                     sourceRange: parameter.sourceRange(context: context)
                 )

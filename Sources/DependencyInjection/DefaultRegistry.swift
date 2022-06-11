@@ -51,14 +51,16 @@ class DefaultRegistry: DependencyRegistry {
     func registerSingleton<Value, Scope: DependencyScope>(
         ofType type: Value.Type,
         in scope: Scope.Type,
-        requirements: [String: Any.Type],
+        qualifier: QualifierDefinition.Type,
+        requirements: [String: TypeID],
         create: @escaping FactoryClosure<Value>
     ) {
         register(
             as: type,
             in: scope,
+            qualifier: qualifier,
             provider: SingletonProvider<Value>(
-                requirements: requirements.mapValues(TypeID.init),
+                requirements: requirements,
                 factory: create
             )
         )
@@ -67,14 +69,16 @@ class DefaultRegistry: DependencyRegistry {
     func registerWeakSingleton<Value: AnyObject, Scope: DependencyScope>(
         ofType type: Value.Type,
         in scope: Scope.Type,
-        requirements: [String: Any.Type],
+        qualifier: QualifierDefinition.Type,
+        requirements: [String: TypeID],
         create: @escaping FactoryClosure<Value>
     ) {
         register(
             as: type,
             in: scope,
+            qualifier: qualifier,
             provider: WeakSingletonProvider<Value>(
-                requirements: requirements.mapValues(TypeID.init),
+                requirements: requirements,
                 factory: create
             )
         )
@@ -83,14 +87,16 @@ class DefaultRegistry: DependencyRegistry {
     func registerFactory<Value, Scope: DependencyScope>(
         ofType type: Value.Type,
         in scope: Scope.Type,
-        requirements: [String: Any.Type],
+        qualifier: QualifierDefinition.Type,
+        requirements: [String: TypeID],
         create: @escaping FactoryClosure<Value>
     ) {
         register(
             as: type,
             in: scope,
+            qualifier: qualifier,
             provider: FactoryProvider<Value>(
-                requirements: requirements.mapValues(TypeID.init),
+                requirements: requirements,
                 factory: create
             )
         )
@@ -99,13 +105,14 @@ class DefaultRegistry: DependencyRegistry {
     func registerAssistedFactory<Value, Scope: DependencyScope>(
         ofType type: Value.Type,
         in scope: Scope.Type,
-        requirements: [String: Any.Type]
+        requirements: [String: TypeID]
     ) {
         register(
             as: type,
             in: scope,
+            qualifier: Qualifiers.Default.self,
             provider: AssistedFactory<Value>(
-                requirements: requirements.mapValues(TypeID.init)
+                requirements: requirements
             )
         )
     }
@@ -113,11 +120,14 @@ class DefaultRegistry: DependencyRegistry {
     private func register<Value, Scope: DependencyScope>(
         as type: Value.Type,
         in scope: Scope.Type,
+        qualifier: QualifierDefinition.Type,
         provider: DependencyDeclaration
     ) {
         assert(!isSetupFinished)
+        
+        let typeID = TypeID(type, qualifier: qualifier)
 
-        graph.addProvider(provider, in: scope, for: TypeID(type))
+        graph.addProvider(provider, in: scope, for: typeID)
 
     }
 

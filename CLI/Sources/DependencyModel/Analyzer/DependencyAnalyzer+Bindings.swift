@@ -5,7 +5,7 @@ extension DependencyGraphCollector {
     mutating func collectBindingExtensions(
         _ ext: Extension
     ) {
-        guard let extendedFactoryType = ext.extendedFactoryType else {
+        guard ext.isDependencyBindingsExtension else {
             return
         }
 
@@ -27,16 +27,16 @@ extension DependencyGraphCollector {
                 diagnostics.record(.conflictingScopeDefinitions(function))
             }
 
-            let accessLevel: AccessLevel?
+            let qualifiers = function.qualifiers
 
-            switch function.name {
-            case "bind": accessLevel = nil
-            case "bindInternal": accessLevel = .internal
-            case "bindPublic": accessLevel = .public
-            default:
-                diagnostics.record(.bindingFunctionMisnamed(function))
-                return
-            }
+            let accessLevel: AccessLevel =
+                qualifiers.builtIn.contains(.Public) ? .public : .internal
+            let extendedFactoryType: InjectableProtocol =
+                qualifiers.builtIn.contains(.Singleton)
+                ? .singleton
+                : qualifiers.builtIn.contains(.WeakSingleton)
+                    ? .weakSingleton
+                    : .factory
 
             for arg in function.arguments where arg.isAssisted {
                 diagnostics.error(
@@ -52,10 +52,12 @@ extension DependencyGraphCollector {
                 )
                 return
             }
+
             graph.registerBinding(
                 type: returnType,
                 kind: extendedFactoryType,
                 accessLevel: accessLevel,
+                qualifiers: function.qualifiers,
                 factoryMethod: function,
                 scope: scopeFromFunction
                     ?? scopeFromExtension
@@ -78,14 +80,6 @@ extension Diagnostic {
     static func genericBindingNotSupported(_ function: Function) -> Diagnostic {
         Diagnostic(
             message: "Generic Bindings are not supported",
-            level: .error,
-            location: function.sourceRange?.start
-        )
-    }
-
-    static func bindingFunctionMisnamed(_ function: Function) -> Diagnostic {
-        Diagnostic(
-            message: "Binding methods must be named 'bind' 'bindInternal' or 'bindPublic'",
             level: .error,
             location: function.sourceRange?.start
         )

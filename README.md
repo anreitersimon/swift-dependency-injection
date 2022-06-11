@@ -12,10 +12,10 @@ TODO: Add more explanation
 * Add a dependency on the `DependencyInjection` target
 * Apply the plugin `DependencyInjectionPlugin` to target
 * Declare a type as Injectable by conforming to one of these protocols
-	* `Injectable` Whenever this is injected a new "instance" will be constructed
-	* `Singleton` Only one instance will be created, once created it will be kept in memory
-	* `WeakSingleton` Only one instance will be created, once the instance is no longer referenced it will be deallocated
-* Use `@Inject` on arguments of a types initializer
+  * `Injectable` Whenever this is injected a new "instance" will be constructed
+  * `Singleton` Only one instance will be created, once created it will be kept in memory
+  * `WeakSingleton` Only one instance will be created, once the instance is no longer referenced it will be deallocated
+* Use `@Inject` or `@Assisted` on arguments of a types initializer
 
 
 ## Declaring Dependencies
@@ -24,28 +24,28 @@ To demonstrate how to use `SwiftDependencyInjection` lets start with a example.
 
 ```swift
 class APIService: Injectable {
-	init() {}
+  init() {}
 
-	func request(url: URL) -> Data
+  func request(url: URL) -> Data
 }
 
 
 class UserRepository: Injectable {
-	let apiService: APIService
+  let apiService: APIService
 
-	init(@Inject apiService: APIService) {
-		self.apiService = apiService
-	}
+  init(@Inject apiService: APIService) {
+    self.apiService = apiService
+  }
 
-	func listUsers() -> [User]
+  func listUsers() -> [User]
 }
 
 class UserListViewModel: Injectable {
-	let repository: UserRepository
+  let repository: UserRepository
 
-	init(@Inject repository: UserRepository) {
-		self.repository = apiService
-	}
+  init(@Inject repository: UserRepository) {
+    self.repository = apiService
+  }
 }
 
 
@@ -72,13 +72,13 @@ If thats not the desired behaviour a type can be declared as either `Singleton` 
 
 ```swift
 class UserRepository: Singleton {
-	let apiService: APIService
+  let apiService: APIService
 
-	init(@Inject apiService: APIService) {
-		self.apiService = apiService
-	}
+  init(@Inject apiService: APIService) {
+    self.apiService = apiService
+  }
 
-	func listUsers() -> [User]
+  func listUsers() -> [User]
 }
 
 // You can obtain a reference to it using
@@ -107,15 +107,15 @@ All arguments of that method will be injected (like when using the `@Inject` ann
 // you can control the storage by declaring a extension
 extension Dependencies.Singletons {
 
-	// the method must be named 'bind'
-	func bind() -> ThirdPartyLibrary.SomeClass {
-		return ThirdPartyLibrary.SomeClass()
-	}
+  // the method must be named 'bind'
+  func bind() -> ThirdPartyLibrary.SomeClass {
+    return ThirdPartyLibrary.SomeClass()
+  }
 
-	// This is also useful if you want to inject a protocol
-	func bind(repository: UserRepository) -> UserRepositoryProtocol {
-		return repository
-	}
+  // This is also useful if you want to inject a protocol
+  func bind(repository: UserRepository) -> UserRepositoryProtocol {
+    return repository
+  }
 
 }
 ```

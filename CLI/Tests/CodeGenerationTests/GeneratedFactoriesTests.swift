@@ -33,14 +33,13 @@ class GeneratedFactoriesTests: XCTestCase {
                         bla: Int = 1
                     ) {}
 
-
                     class Nested: Injectable {
                         init() {}
                     }
                 }
 
                 struct ImplicitInitializer: Injectable {
-                    @Inject var a: I
+                    @Inject(Qualifiers.MyQualifier.self) var a: I
                     @Assisted var b: Int
                     var bla: Int = 1
                 }
@@ -51,13 +50,15 @@ class GeneratedFactoriesTests: XCTestCase {
 
                 protocol Protocol {}
 
-                extension Dependencies.Factories {
+                extension Dependencies.Bindings {
                     static func bind(a: ImplicitInitializer) -> Protocol where Scope == CustomScope {
                         a
                     }
                 }
 
-                extension Dependencies.Factories where Scope == GlobalScope {
+                extension Dependencies.Bindings where Scope == GlobalScope {
+                    
+                    @Qualifiers.MyQualifier
                     static func bind(a: ImplicitInitializer) -> Protocol {
                         a
                     }
@@ -74,8 +75,8 @@ class GeneratedFactoriesTests: XCTestCase {
 
         let text = CodeGen.generateSources(fileGraph: graph)
 
-        assertSnapshot(matching: text, as: .lines)
-        assertSnapshot(matching: graph, as: .yaml)
+        assertSnapshot(matching: text, as: .lines, record: true)
+        assertSnapshot(matching: graph, as: .yaml, record: true)
 
     }
 

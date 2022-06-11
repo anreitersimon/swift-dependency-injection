@@ -3,7 +3,6 @@ import Foundation
 
 protocol RepoProtocol {}
 
-
 public class CoreRepository: Singleton, RepoProtocol {
     init(
         @Inject service: Service
@@ -19,5 +18,4 @@ struct Service: Injectable {
 
 struct API: Injectable {}
 
-public protocol AProtocol {}
-
+public protocol AProtocol: AnyObject {}

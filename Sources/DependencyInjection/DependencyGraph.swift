@@ -9,10 +9,8 @@ class DependencyGraph {
         let type: TypeID
 
         var id: String {
-            return "\(scope.description).\(type.description)".replacingOccurrences(
-                of: ".",
-                with: "_"
-            )
+            return "\(scope.description).\(type.id)"
+                .replacingOccurrences(of: ".", with: "_")
         }
     }
 
