@@ -16,7 +16,7 @@ struct GenerateFileDependencies: ExpressibleAsSourceFile {
 
     var fileRegistrationFunction: FunctionDecl {
         FunctionDecl(
-            identifier: .identifier("register_\(graph.fileName)"),
+            identifier: .identifier("register_\(graph.fileName.swiftIdentifier())"),
             signature: FunctionSignature(
                 input: ParameterClause {
                     FunctionParameter(
