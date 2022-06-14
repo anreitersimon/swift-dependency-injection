@@ -27,7 +27,7 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/apple/swift-argument-parser",
-            from: "1.0.0"
+            branch: "main"
         ),
         .package(
             url: "https://github.com/pointfreeco/swift-snapshot-testing.git",
