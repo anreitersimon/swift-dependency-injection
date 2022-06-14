@@ -3,10 +3,19 @@
     {
       "identity" : "swift-argument-parser",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-argument-parser",
+      "location" : "https://github.com/apple/swift-argument-parser.git",
       "state" : {
-        "revision" : "f3c9084a71ef4376f2fabbdf1d3d90a49f1fabdb",
-        "version" : "1.1.2"
+        "branch" : "main",
+        "revision" : "c61fc0f7f0b10fbbdbdc7e0b31cf1b7f8fd35ea0"
+      }
+    },
+    {
+      "identity" : "swift-format",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/anreitersimon/swift-format",
+      "state" : {
+        "branch" : "allow-combining-code-block-item-lists",
+        "revision" : "57153088edb5ec29ec1df54905693af37bcfeee0"
       }
     },
     {
@@ -30,10 +39,28 @@
     {
       "identity" : "swift-syntax",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-syntax.git",
+      "location" : "https://github.com/anreitersimon/swift-syntax.git",
       "state" : {
-        "branch" : "0.50600.1",
-        "revision" : "0b6c22b97f8e9320bca62e82cdbee601cf37ad3f"
+        "branch" : "allow-combining-code-block-item-lists",
+        "revision" : "1dc64a69d0e613176d04d6a7ef74b1fbcb742477"
+      }
+    },
+    {
+      "identity" : "swift-system",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-system.git",
+      "state" : {
+        "revision" : "836bc4557b74fe6d2660218d56e3ce96aff76574",
+        "version" : "1.1.1"
+      }
+    },
+    {
+      "identity" : "swift-tools-support-core",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-tools-support-core.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "5ebdb4ec75fa683819080cf485e28880315e5872"
       }
     },
     {

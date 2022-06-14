@@ -1,159 +1,101 @@
-// Automatically generated DO NOT MODIFY
-
-import TestModule
 import DependencyInjection
-// MARK: - File Extension -
-extension Mock_Module {
-    static func register_MockFile(in registry: DependencyRegistry) {
+import TestModule
 
-        // Scopes
+extension MockFile_Module {
+    internal static func register_MockFile(in registry: DependencyRegistry) {
         registry.registerScope(CustomScope.self)
-
-        // Injectable Types
         Mock.ExplicitelyInitialized.register(in: registry)
         Mock.ExplicitelyInitialized.Nested.register(in: registry)
-
-        // Bindings
+        Mock.ImplicitInitializer.register(in: registry)
         register_Binding_Protocol_bind_CustomScope(in: registry)
         register_Binding_Protocol_bind_GlobalScope_MyQualifier(in: registry)
     }
 }
 public protocol Provides_CustomScope: Provides_GlobalScope {}
 extension CustomScope: Provides_CustomScope {}
-// MARK: - User defined Binding extensions -
-
-extension Mock_Module {
-    fileprivate static func register_Binding_Protocol_bind_CustomScope(in registry: DependencyRegistry) {
-        let requirements: [String: TypeID] = [
-            "a": TypeID(ImplicitInitializer.self, qualifier: Qualifiers.Default.self),
-        ]
-
+extension Mock.ExplicitelyInitialized {
+    fileprivate static func register(in registry: DependencyRegistry) {
         registry.registerFactory(
-            ofType: Protocol.self,
+            ofType: Mock.ExplicitelyInitialized.self,
             in: CustomScope.self,
             qualifier: Qualifiers.Default.self,
-            requirements: requirements
-        ) { resolver -> Protocol in
-            Dependencies.Bindings<CustomScope>.bind(
-                a: resolver.resolve(qualifier: Qualifiers.Default.self)
-            )
-        }
-    }
-    fileprivate static func register_Binding_Protocol_bind_GlobalScope_MyQualifier(in registry: DependencyRegistry) {
-        let requirements: [String: TypeID] = [
-            "a": TypeID(ImplicitInitializer.self, qualifier: Qualifiers.Default.self),
-        ]
-
-        registry.registerFactory(
-            ofType: Protocol.self,
-            in: GlobalScope.self,
-            qualifier: Qualifiers.MyQualifier.self,
-            requirements: requirements
-        ) { resolver -> Protocol in
-            Dependencies.Bindings<GlobalScope>.bind(
+            requirements: [
+                "a": TypeID(I.self, qualifier: Qualifiers.Default.self)
+            ]
+        ) { resolver in
+            Mock.ExplicitelyInitialized(
                 a: resolver.resolve(qualifier: Qualifiers.Default.self)
             )
         }
     }
 }
-// MARK: - Provided Types -
-
-extension Mock.ExplicitelyInitialized {
-    fileprivate static func register(in registry: DependencyRegistry) {
-        let requirements: [String: TypeID] = [
-            "a": TypeID(I.self, qualifier: Qualifiers.Default.self),
-        ]
-
-        registry.registerFactory(
-            ofType: Mock.ExplicitelyInitialized.self,
-            in: Mock.ExplicitelyInitialized.Scope.self,
-            qualifier: Mock.ExplicitelyInitialized.Qualifier.self,
-            requirements: requirements
-        ) { resolver in
-            Mock.ExplicitelyInitialized.newInstance(resolver: resolver)
-        }
-    }
-    fileprivate static func newInstance(
-        resolver: DependencyResolver
-    ) -> Mock.ExplicitelyInitialized {
-        Mock.ExplicitelyInitialized(
-            a: resolver.resolve(qualifier: Qualifiers.Default.self)
-        )
+extension DependencyContainer where Scope: Provides_CustomScope {
+    internal func explicitelyInitialized() -> Mock.ExplicitelyInitialized {
+        self.resolve(qualifier: Qualifiers.Default.self)
     }
 }
 extension Mock.ExplicitelyInitialized.Nested {
     fileprivate static func register(in registry: DependencyRegistry) {
-        let requirements: [String: TypeID] = [:]
-
         registry.registerFactory(
             ofType: Mock.ExplicitelyInitialized.Nested.self,
-            in: Mock.ExplicitelyInitialized.Nested.Scope.self,
-            qualifier: Mock.ExplicitelyInitialized.Nested.Qualifier.self,
-            requirements: requirements
-        ) { resolver in
-            Mock.ExplicitelyInitialized.Nested.newInstance(resolver: resolver)
-        }
+            in: GlobalScope.self,
+            qualifier: Qualifiers.Default.self,
+            requirements: [:]
+        ) { resolver in Mock.ExplicitelyInitialized.Nested() }
     }
-    fileprivate static func newInstance(
-        resolver: DependencyResolver
-    ) -> Mock.ExplicitelyInitialized.Nested {
-        Mock.ExplicitelyInitialized.Nested()
+}
+extension DependencyContainer where Scope: Provides_GlobalScope {
+    internal func nested() -> Mock.ExplicitelyInitialized.Nested {
+        self.resolve(qualifier: Qualifiers.Default.self)
     }
 }
 extension Mock.ImplicitInitializer {
     fileprivate static func register(in registry: DependencyRegistry) {
-        let requirements: [String: TypeID] = [
-            "a": TypeID(I.self, qualifier: Qualifiers.Default.self),
-        ]
-
         registry.registerAssistedFactory(
             ofType: Mock.ImplicitInitializer.self,
-            in: Mock.ImplicitInitializer.Scope.self,
-            requirements: requirements
+            in: GlobalScope.self,
+            qualifier: Qualifiers.Default.self,
+            requirements: [
+                "a": TypeID(I.self, qualifier: Qualifiers.Default.self)
+            ]
         )
     }
-    fileprivate static func newInstance(
-        resolver: DependencyResolver,
-        b: Int
-    ) -> Mock.ImplicitInitializer {
+}
+extension DependencyContainer where Scope: Provides_GlobalScope {
+    internal func implicitInitializer(b: Int) -> Mock.ImplicitInitializer {
         Mock.ImplicitInitializer(
             a: resolver.resolve(qualifier: Qualifiers.Default.self),
             b: b
         )
     }
 }
-
-// MARK: - Bindings -
-
-// Container Extensions
-extension DependencyContainer where Scope: Provides_CustomScope {
-    internal func explicitelyInitialized() -> ExplicitelyInitialized {
-        resolve(qualifier: Qualifiers.Default.self)
-    }
+private func register_Binding_Protocol_bind_CustomScope(
+    in registry: DependencyRegistry
+) {
+    registry.registerFactory(
+        ofType: Protocol.self,
+        in: CustomScope.self,
+        qualifier: Qualifiers.Default.self,
+        requirements: [:]
+    ) { resolver in Dependencies.Bindings<CustomScope>.bind() }
 }
-extension DependencyContainer where Scope: Provides_GlobalScope {
-    internal func nested() -> Nested {
-        resolve(qualifier: Qualifiers.Default.self)
-    }
-}
-extension DependencyContainer where Scope: Provides_GlobalScope {
-    internal func implicitInitializer(
-        b: Int
-    ) -> ImplicitInitializer {
-        ImplicitInitializer.newInstance(
-            resolver: self,
-            b: b
-        )
-    }
-}
-
 extension DependencyContainer where Scope: Provides_CustomScope {
     internal func bind() -> Protocol {
-        resolve(qualifier: Qualifiers.Default.self)
+        self.resolve(qualifier: Qualifiers.Default.self)
     }
+}
+private func register_Binding_Protocol_bind_GlobalScope_MyQualifier(
+    in registry: DependencyRegistry
+) {
+    registry.registerFactory(
+        ofType: Protocol.self,
+        in: GlobalScope.self,
+        qualifier: Qualifiers.MyQualifier.self,
+        requirements: [:]
+    ) { resolver in Dependencies.Bindings<GlobalScope>.bind() }
 }
 extension DependencyContainer where Scope: Provides_GlobalScope {
     internal func bind() -> Protocol {
-        resolve(qualifier: Qualifiers.MyQualifier.self)
+        self.resolve(qualifier: Qualifiers.MyQualifier.self)
     }
 }

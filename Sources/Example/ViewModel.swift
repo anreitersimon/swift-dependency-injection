@@ -4,8 +4,6 @@ import Foundation
 
 public struct ExampleScope: DependencyScope {
     public typealias ParentScope = GlobalScope
-
-    public init() {}
 }
 
 class ViewModel: Injectable {
@@ -34,8 +32,7 @@ extension Dependencies.Bindings {
     static func aProtocolMyQualifer(impl: AProtocolImplementation) -> AProtocol {
         impl
     }
-
-    @Qualifiers.Public
+    
     static func aProtocol(impl: AProtocolImplementation) -> AProtocol {
         impl
     }

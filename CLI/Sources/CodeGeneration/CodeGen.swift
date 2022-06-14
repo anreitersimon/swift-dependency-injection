@@ -1,8 +1,18 @@
 import DependencyModel
 import Foundation
 import SourceModel
+import SwiftFormat
+import SwiftFormatConfiguration
+import SwiftSyntax
+import SwiftSyntaxBuilder
 
 extension Initializer {
+    public var isAssisted: Bool {
+        return arguments.contains(where: \.isAssisted)
+    }
+}
+
+extension Function {
     public var isAssisted: Bool {
         return arguments.contains(where: \.isAssisted)
     }
@@ -12,439 +22,100 @@ public enum CodeGen {
 
     static let header = "// Automatically generated DO NOT MODIFY"
 
+    @TupleExprElementListBuilder
+    static func registrationCallArguments(
+        typeName: String,
+        scope: TypeSignature?,
+        qualifiers: Qualifiers,
+        arguments: [Function.Argument]
+    ) -> TupleExprElementList {
+        TupleExprElement(
+            label: .identifier("ofType"),
+            colon: .colon,
+            expression: IdentifierExpr("\(typeName).self"),
+            trailingComma: .comma
+        )
+        TupleExprElement(
+            label: .identifier("in"),
+            colon: .colon,
+            expression: IdentifierExpr(
+                scope?.asMetatype()?.description ?? "Never.self"
+            ),
+            trailingComma: .comma
+        )
+        TupleExprElement(
+            label: .identifier("qualifier"),
+            colon: .colon,
+            expression: IdentifierExpr(qualifiers.effectiveQalifier),
+            trailingComma: .comma
+        )
+        TupleExprElement(
+            label: .identifier("requirements"),
+            colon: .colon,
+            expression: InjectionRequirements(arguments: arguments),
+            trailingComma: nil
+        )
+    }
+
+    static func factoryMethodParameters(
+        arguments: [Function.Argument]
+    ) -> ParameterClause {
+        ParameterClause(parameterListBuilder: {
+            for (argument, isLast) in arguments.filter(\.isAssisted).withIsLast() {
+                FunctionParameter(
+                    firstName: argument.firstName.map(TokenSyntax.identifier(_:)),
+                    secondName: argument.secondName.map(TokenSyntax.identifier(_:)),
+                    colon: .colon,
+                    type: SimpleTypeIdentifier(argument.type?.description ?? "Never"),
+                    ellipsis: nil,
+                    defaultArgument: nil,
+                    trailingComma: isLast ? nil : .comma,
+                    attributesBuilder: {}
+                )
+            }
+        })
+    }
+
     public static func generateSources(
         moduleGraph graph: ModuleDependencyGraph
     ) -> String {
+        let file = GenerateModuleDependencies(graph: graph)
 
-        let writer = FileWriter()
-
-        writer.writeMultiline(
-            """
-            \(header)
-
-            import DependencyInjection
-            """
-        )
-        for module in graph.modules {
-            writer.writeLine("import \(module)")
-        }
-
-        writer.scope("public enum \(graph.module)_Module: DependencyInjection.DependencyModule") {
-
-            $0.writeLine("public static let submodules: [DependencyModule.Type] = [")
-            $0.indent {
-                for module in graph.modules {
-                    $0.writeLine("\(module)_Module.self,")
-                }
-            }
-            $0.writeLine("]")
-
-            $0.scope("public static func register(in registry: DependencyRegistry)") {
-                for file in graph.files {
-                    let fileName = file.deletingPathExtension().lastPathComponent.swiftIdentifier()
-                    $0.writeLine("register_\(fileName)(in: registry)")
-                }
-            }
-
-        }
-
-        return writer.builder
+        return file.formattedText()
     }
 
     public static func generateSources(
         fileGraph graph: FileDependencyGraph
     ) -> String {
 
-        let writer = FileWriter()
+        let file = GenerateFileDependencies(graph: graph)
 
-        writer.writeLine(header)
-        writer.endLine()
-
-        for imp in graph.imports {
-            writer.writeLine(imp.description)
-        }
-
-        if !graph.imports.contains(where: { $0.path == "DependencyInjection" }) {
-            writer.write("import DependencyInjection")
-        }
-
-        writer.endLine()
-
-        writer.writeLine("// MARK: - File Extension -")
-
-        writer.scope("extension \(graph.module)_Module") {
-            $0.scope(
-                "static func register_\(graph.fileName.swiftIdentifier())(in registry: DependencyRegistry)"
-            ) {
-
-                $0.endLine()
-                $0.writeLine("// Scopes")
-                for scope in graph.scopes {
-                    $0.writeLine("registry.registerScope(\(scope.name).self)")
-                }
-
-                $0.endLine()
-                $0.writeLine("// Injectable Types")
-
-                for provided in graph.provides
-                where !provided.initializer.arguments.contains(where: \.isAssisted) {
-                    $0.writeLine("\(provided.fullName).register(in: registry)")
-                }
-
-                $0.endLine()
-                $0.writeLine("// Bindings")
-
-                for binding in graph.bindings {
-                    $0.writeLine(
-                        "\(binding.registrationFunctionName)(in: registry)"
-                    )
-                }
-            }
-        }
-
-        for scope in graph.scopes {
-            writer.writeMultiline(
-                """
-                public protocol Provides_\(scope.name): Provides_\(scope.parent.description) {}
-
-                extension \(scope.name): Provides_\(scope.name) {}
-                """
-            )
-        }
-
-        writer.writeLine("// MARK: - User defined Binding extensions -")
-        writer.endLine()
-
-        writer.scope("extension \(graph.module)_Module") {
-            for binding in graph.bindings {
-                generateCustomBinding(in: $0, binding: binding)
-            }
-        }
-
-        writer.writeLine("// MARK: - Provided Types -")
-        writer.endLine()
-
-        for provided in graph.provides {
-            writer.scope("extension \(provided.fullName)") {
-                generateRegistration(in: $0, injectable: provided)
-                generateTypeFactory(in: $0, injectable: provided)
-            }
-        }
-
-        writer.endLine()
-
-        writer.writeLine("// MARK: - Bindings -")
-
-        writer.endLine()
-        writer.writeLine("// Container Extensions")
-
-        for provided in graph.provides {
-            generateContainerFactoryMethod(
-                in: writer,
-                accessLevel: provided.accessLevel,
-                methodName: provided.factoryFunctionName,
-                typeName: provided.name,
-                scope: provided.scope.description,
-                qualifiers: provided.qualifiers,
-                arguments: provided.initializer.arguments
-            )
-        }
-        writer.endLine()
-
-        for binding in graph.bindings {
-            generateContainerFactoryMethod(
-                in: writer,
-                accessLevel: binding.accessLevel ?? .internal,
-                methodName: binding.factoryFunctionName,
-                typeName: binding.type.description,
-                scope: binding.scope.description,
-                qualifiers: binding.qualifiers,
-                arguments: []
-            )
-        }
-
-        return writer.builder
-    }
-
-    private static func generateCustomBinding(
-        in writer: FileWriter,
-        binding: Binding
-    ) {
-
-        writer.scope(
-            "fileprivate static func \(binding.registrationFunctionName)(in registry: DependencyRegistry)"
-        ) {
-            generateRequirementsVariable(
-                in: $0,
-                arguments: binding.factoryMethod.arguments
-            )
-
-            let methodName: String
-            let extendedScope = "Dependencies.Bindings<\(binding.scope.description)>"
-
-            switch binding.kind {
-            case .factory:
-                methodName = "registerFactory"
-            case .singleton:
-                methodName = "registerSingleton"
-            case .weakSingleton:
-                methodName = "registerWeakSingleton"
-            }
-
-            let typeName = binding.type.asMetatype()
-
-            if typeName == nil {
-                $0.writeLine("#error(\"No Metatype\")")
-            }
-
-            $0.writeMultiline(
-                """
-                registry.\(methodName)(
-                    ofType: \(typeName ?? "Never.self"),
-                    in: \(binding.scope.asMetatype() ?? "Never.self"),
-                    qualifier: \(binding.qualifiers.effectiveQalifier),
-                    requirements: requirements
-                ) { resolver -> \(binding.type.description) in
-                """
-            )
-            $0.indent {
-                $0.write("\(extendedScope).\(binding.factoryMethod.name)")
-                $0.writeCallArguments(binding.factoryMethod.arguments) { arg in
-                    "resolver.resolve(qualifier: \(arg.qualifiers.effectiveQalifier))"
-                }
-                $0.endLine()
-            }
-            $0.writeLine("}")
-
-        }
-    }
-
-    private static func generateRegistration(
-        in writer: FileWriter,
-        injectable: ProvidedType
-    ) {
-        writer.scope("fileprivate static func register(in registry: DependencyRegistry)") {
-            generateRequirementsVariable(
-                in: $0,
-                arguments: injectable.initializer.arguments.filter(\.isInjected)
-            )
-
-            switch injectable.kind {
-            case .factory where injectable.initializer.isAssisted:
-                $0.writeMultiline(
-                    """
-                    registry.registerAssistedFactory(
-                        ofType: \(injectable.fullName).self,
-                        in: \(injectable.fullName).Scope.self,
-                        requirements: requirements
-                    )
-                    """
-                )
-            case .factory, .singleton, .weakSingleton:
-                let methodName: String
-
-                switch injectable.kind {
-                case .factory:
-                    methodName = "registerFactory"
-                case .singleton:
-                    methodName = "registerSingleton"
-                case .weakSingleton:
-                    methodName = "registerWeakSingleton"
-                }
-
-                $0.writeMultiline(
-                    """
-                    registry.\(methodName)(
-                        ofType: \(injectable.fullName).self,
-                        in: \(injectable.fullName).Scope.self,
-                        qualifier: \(injectable.fullName).Qualifier.self,
-                        requirements: requirements
-                    ) { resolver in
-                        \(injectable.fullName).newInstance(resolver: resolver)
-                    }
-                    """
-                )
-            }
-
-        }
-    }
-
-    private static func generateContainerFactoryMethod(
-        in writer: FileWriter,
-        accessLevel: AccessLevel,
-        methodName: String,
-        typeName: String,
-        scope: String,
-        qualifiers: Qualifiers,
-        arguments: [Function.Argument]
-    ) {
-        let allArguments = arguments.filter { $0.isAssisted || $0.isInjected }
-        let assisted = allArguments.filter(\.isAssisted)
-        var actualArguments = assisted
-        actualArguments.insert(Function.Argument(firstName: "resolver"), at: 0)
-
-        writer.scope("extension DependencyContainer where Scope: Provides_\(scope)") {
-
-            $0.write(
-                "\(accessLevel.rawValue) func \(methodName)"
-            )
-
-            $0.writeDeclarationArguments(assisted)
-
-            $0.scope(" -> \(typeName)") {
-                if assisted.isEmpty {
-                    $0.writeLine("resolve(qualifier: \(qualifiers.effectiveQalifier))")
-                } else {
-                    $0.write("\(typeName).newInstance")
-                    $0.writeCallArguments(actualArguments) {
-                        $0.firstName == "resolver" ? "self" : nil
-                    }
-                }
-            }
-
-        }
-    }
-
-    private static func generateTypeFactory(
-        in writer: FileWriter,
-        injectable: ProvidedType
-    ) {
-        let allArguments = injectable.initializer.arguments
-            .filter { $0.isAssisted || $0.isInjected }
-        let assisted = allArguments.filter(\.isAssisted)
-
-        writer.writeLine("fileprivate static func newInstance(")
-        writer.indent {
-            $0.write("resolver: DependencyResolver")
-
-            for argument in assisted {
-                $0.write(",")
-                $0.endLine()
-                $0.write(argument.description)
-            }
-        }
-        writer.endLine()
-        writer.scope(") -> \(injectable.fullName)") {
-            $0.write("\(injectable.fullName)")
-            $0.writeCallArguments(allArguments.filter { $0.isInjected || $0.isAssisted }) {
-                $0.isInjected
-                    ? "resolver.resolve(qualifier: \($0.qualifiers.effectiveQalifier))" : nil
-            }
-        }
-
-    }
-
-    private static func generateRequirementsVariable(
-        in writer: FileWriter,
-        arguments: [Function.Argument]
-    ) {
-        writer.write("let requirements: [String: TypeID] = [")
-
-        guard !arguments.isEmpty else {
-            writer.write(":]")
-            writer.endLine()
-            writer.endLine()
-            return
-        }
-        writer.endLine()
-
-        writer.indent {
-            for field in arguments {
-                if let metaType = field.type?.asMetatype() {
-                    let qualifier = field.qualifiers.effectiveQalifier
-                    $0.writeLine(
-                        "\"\(field.firstName ?? field.secondName ?? "-")\": TypeID(\(metaType), qualifier: \(qualifier)),"
-                    )
-                }
-            }
-        }
-        writer.writeLine("]")
-        writer.endLine()
+        return file.formattedText()
     }
 }
 
-extension FileWriter {
 
-    func writeDeclarationArguments(
-        _ arguments: [Function.Argument]
-    ) {
-        self.write("(")
-        self.indent {
+extension ExpressibleAsSourceFile {
+    func formattedText() -> String {
+        let syntax = self.createSourceFile().buildSyntax(format: Format())
 
-            var isFirst = true
+        var config = Configuration()
+        config.indentation = .spaces(4)
+        config.lineLength = 80
+        config.respectsExistingLineBreaks = false
+        config.lineBreakAroundMultilineExpressionChainComponents = true
+        config.lineBreakBeforeEachArgument = true
 
-            for argument in arguments {
+        let formatter = SwiftFormatter(configuration: config)
 
-                if !isFirst {
-                    $0.write(",")
-                }
-                $0.endLine()
-
-                if let outerLabel = argument.firstName {
-                    $0.write(outerLabel)
-                    if let internalName = argument.secondName {
-                        $0.write(" ")
-                        $0.write(internalName)
-                    }
-                }
-                $0.write(": \(argument.type?.description ?? "")")
-
-                if let defaultValue = argument.defaultValue {
-                    $0.write(" = \(defaultValue)")
-                }
-                isFirst = false
-            }
-        }
-
-        if !arguments.isEmpty {
-            endLine()
-        }
-
-        self.write(")")
-
+        var formatted = ""
+        try! formatter.format(
+            syntax: syntax.as(SourceFileSyntax.self)!,
+            assumingFileURL: nil,
+            to: &formatted
+        )
+        return formatted
     }
-
-    func writeCallArguments(
-        _ arguments: [Function.Argument],
-        valueProvider: (Function.Argument) -> String?
-    ) {
-        self.write("(")
-        self.indent {
-
-            var isFirst = true
-
-            for argument in arguments {
-
-                if !isFirst {
-                    $0.write(",")
-                }
-                $0.endLine()
-
-                if let argName = argument.callSiteName {
-                    $0.write(argName)
-                    $0.write(": ")
-                }
-
-                if let custom = valueProvider(argument) {
-                    $0.write(custom)
-                } else if argument.isAssisted {
-                    let internalName = argument.secondName ?? argument.firstName
-
-                    assert(internalName != nil, "argument must at least have internal name")
-
-                    $0.write(internalName!)
-                }
-                isFirst = false
-            }
-        }
-
-        if !arguments.isEmpty {
-            endLine()
-        }
-
-        self.write(")")
-    }
-
 }
 
 extension String {
@@ -454,6 +125,15 @@ extension String {
             return String(dropLast(suffix.count))
         } else {
             return self
+        }
+    }
+}
+
+extension Array {
+
+    func withIsLast() -> [(element: Element, isLast: Bool)] {
+        zip(0..., self).map { (index, element) in
+            (element, index == self.count - 1)
         }
     }
 }

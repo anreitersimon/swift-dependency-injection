@@ -12,7 +12,7 @@ public struct FileDependencyGraph: Codable {
     public var bindings: [Binding] = []
 
     public var uses: [Injection] = []
-
+    
     public mutating func registerInjectableType(
         _ type: TypeDeclaration,
         kind: InjectableProtocol,
@@ -93,13 +93,15 @@ extension String {
 
     /// Returns a form of the string that is a valid bundle identifier
     public func swiftIdentifier() -> String {
-        return String(self.map {
-            if $0.isNumber || $0.isLetter {
-                return $0
-            } else {
-                return "_"
+        return String(
+            self.map {
+                if $0.isNumber || $0.isLetter {
+                    return $0
+                } else {
+                    return "_"
+                }
             }
-        })
+        )
     }
 
     public var lowerFirst: String {
@@ -128,6 +130,21 @@ public struct ProvidedType: Codable {
 
     public var registrationFunctionName: String {
         return "register_Type_\(id)".swiftIdentifier()
+    }
+
+    public var registryMethod: String {
+        if initializer.arguments.contains(where: \.isAssisted) {
+            return "registerAssistedFactory"
+        }
+
+        switch kind {
+        case .factory:
+            return "registerFactory"
+        case .singleton:
+            return "registerSingleton"
+        case .weakSingleton:
+            return "registerWeakSingleton"
+        }
     }
 
     public var factoryFunctionName: String {
@@ -163,6 +180,21 @@ public struct Binding: Codable {
 
     public var factoryFunctionName: String {
         return "\(factoryMethod.name)".swiftIdentifier().lowerFirst
+    }
+
+    public var registryMethod: String {
+        if factoryMethod.arguments.contains(where: \.isAssisted) {
+            return "registerAssistedFactory"
+        }
+
+        switch kind {
+        case .factory:
+            return "registerFactory"
+        case .singleton:
+            return "registerSingleton"
+        case .weakSingleton:
+            return "registerWeakSingleton"
+        }
     }
 }
 

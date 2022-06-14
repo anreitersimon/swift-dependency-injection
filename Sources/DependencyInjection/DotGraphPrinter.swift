@@ -40,8 +40,7 @@ class DotGraphPrinter: DependencyVisitor {
             if resolved.scope == currentScope {
                 currentGraph.nodes[resolved.id] = DotGraph.Node(
                     attributes: [
-                        "label": resolved.type.description,
-                        "color": "green",
+                        "label": resolved.type.description
                     ]
                 )
             }

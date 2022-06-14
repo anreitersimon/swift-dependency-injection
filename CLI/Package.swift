@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "swift-dependency-injection-cli",
+    platforms: [.macOS(.v10_15)],
     products: [
         .executable(
             name: "swift-dependency-injection",
@@ -17,8 +18,12 @@ let package = Package(
             branch: "main"
         ),
         .package(
-            url: "https://github.com/apple/swift-syntax.git",
-            branch: "0.50600.1"
+            url: "https://github.com/anreitersimon/swift-syntax.git",
+            branch: "allow-combining-code-block-item-lists"
+        ),
+        .package(
+            url: "https://github.com/anreitersimon/swift-format",
+            branch: "allow-combining-code-block-item-lists"
         ),
         .package(
             url: "https://github.com/apple/swift-argument-parser",
@@ -68,7 +73,9 @@ let package = Package(
         .target(
             name: "CodeGeneration",
             dependencies: [
-                "DependencyModel"
+                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
+                .product(name: "SwiftFormat", package: "swift-format"),
+                "DependencyModel",
             ]
         ),
         .target(
