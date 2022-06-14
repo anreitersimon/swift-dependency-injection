@@ -42,7 +42,7 @@
       "location" : "https://github.com/anreitersimon/swift-syntax.git",
       "state" : {
         "branch" : "allow-combining-code-block-item-lists",
-        "revision" : "1dc64a69d0e613176d04d6a7ef74b1fbcb742477"
+        "revision" : "fb0a4eff6f11e78f1c1fb77f86edf26cb65308d8"
       }
     },
     {

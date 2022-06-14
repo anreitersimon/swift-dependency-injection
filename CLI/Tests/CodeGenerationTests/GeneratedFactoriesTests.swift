@@ -75,8 +75,8 @@ class GeneratedFactoriesTests: XCTestCase {
 
         let text = CodeGen.generateSources(fileGraph: graph)
 
-        assertSnapshot(matching: text, as: .lines, record: true)
-        assertSnapshot(matching: graph, as: .yaml, record: true)
+        assertSnapshot(matching: text, as: .lines)
+        assertSnapshot(matching: graph, as: .yaml)
 
     }
 
