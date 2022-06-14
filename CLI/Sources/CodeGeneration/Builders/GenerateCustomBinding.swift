@@ -59,6 +59,7 @@ struct GenerateCustomBinding: CodeGenStep {
                                 InstanceConstruction(
                                     calledExpression:
                                         "Dependencies.Bindings<\(binding.scope.description)>.\(binding.factoryMethod.name)",
+                                    resolverBase: "resolver",
                                     arguments: binding.factoryMethod.arguments
                                 )
                             }
@@ -108,6 +109,7 @@ struct GenerateCustomBinding: CodeGenStep {
                             InstanceConstruction(
                                 calledExpression:
                                     "Dependencies.Bindings<\(binding.scope.description)>.\(binding.factoryMethod.name)",
+                                resolverBase: "self",
                                 arguments: binding.factoryMethod.arguments
                             )
                         } else {

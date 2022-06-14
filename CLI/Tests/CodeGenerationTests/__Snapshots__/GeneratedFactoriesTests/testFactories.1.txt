@@ -1,7 +1,7 @@
 import DependencyInjection
 import TestModule
 
-extension MockFile_Module {
+extension Mock_Module {
     internal static func register_MockFile(in registry: DependencyRegistry) {
         registry.registerScope(CustomScope.self)
         Mock.ExplicitelyInitialized.register(in: registry)
@@ -64,7 +64,7 @@ extension Mock.ImplicitInitializer {
 extension DependencyContainer where Scope: Provides_GlobalScope {
     internal func implicitInitializer(b: Int) -> Mock.ImplicitInitializer {
         Mock.ImplicitInitializer(
-            a: resolver.resolve(qualifier: Qualifiers.Default.self),
+            a: self.resolve(qualifier: Qualifiers.Default.self),
             b: b
         )
     }

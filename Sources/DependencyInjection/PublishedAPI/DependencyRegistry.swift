@@ -31,6 +31,7 @@ public protocol DependencyRegistry {
     func registerAssistedFactory<Value, Scope: DependencyScope>(
         ofType type: Value.Type,
         in scope: Scope.Type,
+        qualifier: QualifierDefinition.Type,
         requirements: [String: TypeID]
     )
 

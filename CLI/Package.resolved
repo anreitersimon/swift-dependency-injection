@@ -3,7 +3,7 @@
     {
       "identity" : "swift-argument-parser",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-argument-parser.git",
+      "location" : "https://github.com/apple/swift-argument-parser",
       "state" : {
         "branch" : "main",
         "revision" : "c61fc0f7f0b10fbbdbdc7e0b31cf1b7f8fd35ea0"
@@ -24,7 +24,7 @@
       "location" : "https://github.com/anreitersimon/swift-package-utils",
       "state" : {
         "branch" : "main",
-        "revision" : "1d8ecd53caa2cd181a0dc0c74c37c968009b3411"
+        "revision" : "39ff22f300658cf52dc1bd83179fb2673aa749be"
       }
     },
     {

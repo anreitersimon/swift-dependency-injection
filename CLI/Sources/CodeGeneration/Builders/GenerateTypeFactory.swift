@@ -63,7 +63,10 @@ struct GenerateTypeFactory: CodeGenStep {
                             statementsBuilder: {
                                 InstanceConstruction(
                                     calledExpression: provided.fullName,
-                                    arguments: provided.initializer.arguments
+                                    resolverBase: "resolver",
+                                    arguments: provided.initializer.arguments.filter(
+                                        \.isInjectedOrAssisted
+                                    )
                                 )
                             }
                         ),
@@ -108,7 +111,10 @@ struct GenerateTypeFactory: CodeGenStep {
                         if provided.initializer.isAssisted {
                             InstanceConstruction(
                                 calledExpression: provided.fullName,
-                                arguments: provided.initializer.arguments
+                                resolverBase: "self",
+                                arguments: provided.initializer.arguments.filter(
+                                    \.isInjectedOrAssisted
+                                )
                             )
                         } else {
                             FunctionCallExpr(

@@ -8,19 +8,27 @@ public struct TypeID:
 
     let type: Any.Type
     let qualifier: QualifierDefinition.Type
-    
+
     var qualifierName: String {
-        prettyTypeName(of: qualifier).replacingOccurrences(of: "DependencyInjection.Qualifiers.", with: "")
+        prettyTypeName(of: qualifier).replacingOccurrences(
+            of: "DependencyInjection.Qualifiers.",
+            with: ""
+        )
     }
     var typeName: String {
         prettyTypeName(of: type)
     }
 
-    public init(_ type: Any.Type, qualifier: QualifierDefinition.Type) {
+    public init(
+        _ type: Any.Type,
+        qualifier: QualifierDefinition.Type
+    ) {
+        let actualQualifier = Qualifiers.canonical(qualifier)
+
         self.typeID = ObjectIdentifier(type)
         self.type = type
-        self.qualifierID = ObjectIdentifier(qualifier)
-        self.qualifier = qualifier
+        self.qualifierID = ObjectIdentifier(actualQualifier)
+        self.qualifier = actualQualifier
     }
 
     public static func == (lhs: TypeID, rhs: TypeID) -> Bool {
@@ -50,10 +58,10 @@ public struct TypeID:
 }
 
 func prettyTypeName(of type: Any.Type) -> String {
-    
+
     var str = ""
     debugPrint(type, terminator: "", to: &str)
-    
+
     return str.sanitizeTypeName
 }
 
@@ -69,6 +77,21 @@ extension String {
 
         } else {
             return self
+        }
+    }
+}
+
+extension Qualifiers {
+
+    static func canonical(_ qualifier: QualifierDefinition.Type) -> QualifierDefinition.Type {
+        if qualifier == Qualifiers.Public.self {
+            return Qualifiers.Default.self
+        } else if qualifier == Qualifiers.Singleton.self {
+            return Qualifiers.Default.self
+        } else if qualifier == Qualifiers.WeakSingleton.self {
+            return Qualifiers.Default.self
+        } else {
+            return qualifier
         }
     }
 }

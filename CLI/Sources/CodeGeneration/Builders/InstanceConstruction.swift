@@ -4,6 +4,7 @@ import SwiftSyntaxBuilder
 
 struct InstanceConstruction: ExpressibleAsFunctionCallExpr {
     let calledExpression: String
+    let resolverBase: String
     let arguments: [Function.Argument]
 
     func createExprBuildable() -> ExprBuildable {
@@ -18,9 +19,10 @@ struct InstanceConstruction: ExpressibleAsFunctionCallExpr {
         FunctionCallExpr(
             calledExpression,
             argumentListBuilder: {
-                for (argument, isLast) in arguments.filter(\.isInjectedOrAssisted).withIsLast() {
+                for (argument, isLast) in arguments.withIsLast() {
                     TupleExprElement(
-                        label: argument.firstName.map(TokenSyntax.identifier(_:)),
+                        label: argument.firstName
+                            .map(TokenSyntax.identifier(_:)),
                         colon: argument.firstName != nil ? .colon : nil,
                         expression: argumentExpression(for: argument),
                         trailingComma: isLast ? nil : .comma
@@ -35,7 +37,7 @@ struct InstanceConstruction: ExpressibleAsFunctionCallExpr {
             return IdentifierExpr(argument.secondName ?? argument.firstName ?? "")
         } else {
             return FunctionCallExpr(
-                "resolver.resolve",
+                "\(resolverBase).resolve",
                 argumentListBuilder: {
                     TupleExprElement(
                         label: .identifier("qualifier"),

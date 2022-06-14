@@ -1,0 +1,6 @@
+import DependencyInjection
+
+public enum Example_Module: DependencyInjection.DependencyModule {
+    public static let submodules: [DependencyModule.Type] = []
+    public static func register(in registry: DependencyRegistry) {}
+}

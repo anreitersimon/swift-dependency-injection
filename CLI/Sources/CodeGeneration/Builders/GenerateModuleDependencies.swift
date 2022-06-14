@@ -13,10 +13,14 @@ struct GenerateModuleDependencies: ExpressibleAsSourceFile {
 
         VariableDecl(
             letOrVarKeyword: .let,
-            modifiersBuilder: { TokenSyntax.public },
+            modifiersBuilder: {
+                TokenSyntax.public
+                TokenSyntax.static
+            },
             bindingsBuilder: {
                 PatternBinding(
                     pattern: "submodules",
+                    typeAnnotation: TypeAnnotation("[DependencyModule.Type]"),
                     initializer: InitializerClause(
 
                         value: ArrayExpr(elementsBuilder: {

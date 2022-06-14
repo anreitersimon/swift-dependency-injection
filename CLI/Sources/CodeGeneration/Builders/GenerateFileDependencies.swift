@@ -50,7 +50,7 @@ struct GenerateFileDependencies: ExpressibleAsSourceFile {
             }
 
             ExtensionDecl.init(
-                extendedType: "\(graph.fileName)_Module",
+                extendedType: "\(graph.module)_Module",
                 membersBuilder: {
                     fileRegistrationFunction
                 }

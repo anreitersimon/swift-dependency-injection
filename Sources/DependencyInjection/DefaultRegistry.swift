@@ -105,12 +105,13 @@ class DefaultRegistry: DependencyRegistry {
     func registerAssistedFactory<Value, Scope: DependencyScope>(
         ofType type: Value.Type,
         in scope: Scope.Type,
+        qualifier: QualifierDefinition.Type,
         requirements: [String: TypeID]
     ) {
         register(
             as: type,
             in: scope,
-            qualifier: Qualifiers.Default.self,
+            qualifier: qualifier,
             provider: AssistedFactory<Value>(
                 requirements: requirements
             )
