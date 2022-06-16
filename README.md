@@ -57,7 +57,7 @@ let viewModel = UserListViewModel(repository: repository)
 
 // You can just write
 
-let viewModel = Dependencies.newInstance()
+let viewModel = Dependencies.global.userListViewModel()
 
 // the `newInstance` method is automatically generated
 ```
@@ -104,11 +104,10 @@ All arguments of that method will be injected (like when using the `@Inject` ann
 
 ```swift
 
-// you can control the storage by declaring a extension
-extension Dependencies.Singletons {
+extension Dependencies.Bindings {
 
-  // the method must be named 'bind'
-  func bind() -> ThirdPartyLibrary.SomeClass {
+  // This makes ThirdPartyLibrary.SomeClass usable with @Inject
+  func someClass() -> ThirdPartyLibrary.SomeClass {
     return ThirdPartyLibrary.SomeClass()
   }
 
